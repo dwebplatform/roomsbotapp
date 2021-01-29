@@ -11,6 +11,12 @@ module.exports = {
       status: {
         type: Sequelize.INTEGER
       },
+      fromDate: {
+        type: Sequelize.INTEGER
+      },
+      toDate: {
+        type: Sequelize.INTEGER
+      },
       fullInfo: {
         type: Sequelize.STRING,
         defaultValue: '{}'

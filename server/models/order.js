@@ -15,6 +15,8 @@ module.exports = (sequelize, DataTypes) => {
   };
   Order.init({
     status: DataTypes.INTEGER,
+    fromDate: DataTypes.INTEGER,
+    toDate: DataTypes.INTEGER,
     fullInfo: {
       type: DataTypes.STRING,
       get: function () {

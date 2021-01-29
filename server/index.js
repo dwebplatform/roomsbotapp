@@ -1,42 +1,246 @@
+// @ts-nocheck
+
+require('dotenv').config();
+
+const API_DOMAIN = 'http://localhost:8000';
 const path = require('path');
 const Sequelize = require('sequelize');
 const express = require('express');
 var bodyParser = require('body-parser')
-
+const { handleBotMessage, handleBotCallBackQuery } = require('./botUtils');
 
 const app = express();
+const paginate = require('express-paginate');
 
+
+
+app.use(paginate.middleware(10, 50));
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-const { Client, Apartment, Order } = require('./models');
+const { Client, Apartment, Order, Service, ApartmentService, Subway, ApartmentSubway } = require('./models');
+
+/* many-to-many connections */
+
+
+// Movie.belongsToMany(Actor, { through: 'ActorMovies' });
+// Actor.belongsToMany(Movie, { through: 'ActorMovies' });
+/* end: many-to-many */
 
 const sequelize = new Sequelize('roombot_db', 'root', '', {
     host: 'localhost',
     dialect: 'mysql'
 });
 
-
+/**
+ * ! sql connections 
+ */
+Apartment.belongsToMany(Subway, { through: ApartmentSubway });
+Subway.belongsToMany(Apartment, { through: ApartmentSubway });
+Apartment.belongsToMany(Service, { through: ApartmentService });
+Service.belongsToMany(Apartment, { through: ApartmentService });
 
 const mode = process.argv[2] || null;
-
 if (!(mode === 'dev')) {
-
     app.use(express.static(path.join(__dirname, "..", "front-end/build")));
     app.use(express.static("public"));
-
     app.use((req, res, next) => {
         res.sendFile(path.join(__dirname, "..", "front-end/build", "index.html"));
     });
 
 }
+app.use(express.static(path.join(__dirname, "..", "server/public")));
+// const { allMetros } = require('./allmetro');
+
+
+app.get('/generate-dummy-data', async (req, res) => {
+    // let newApartment = await Apartment.create({
+    //     address: 'ул Панферова д 3',
+    //     price: 2500,
+    //     roomAmount: Math.ceil(Math.random() * 3),
+    //     images: '[]'
+    // });
+    // let allApartments = await Apartment.findOne({
+    //     where: {
+    //         id: 1
+    //     },
+    //     include: Subway
+    // });
+    // let subWay = await Subway.findOne({
+    //     where: {
+    //         id: 5
+    //     }
+    // })
+    // await allApartments.addSubway(subWay);
+
+    // await newApartment.addSubway(newMetro);
+    // return res.json({
+    //     allApartments
+    // })
+})
+
+// const TelegramBot = require('node-telegram-bot-api');
+
+// replace the value below with the Telegram token you receive from @BotFather
+const token = process.env.ROOM_BOT_TOKEN;
+// Create a bot that uses 'polling' to fetch new updates
+
+// Matches "/echo [whatever]"
+
+
+const { Telegraf, session, Scenes, Markup } = require('telegraf');
+const { default: axios } = require('axios');
+
+const WizardScene = Scenes.WizardScene;
+const Stage = Scenes.Stage;
+
+
+
+const bot = new Telegraf(token);
+
+const stage = new Stage();
+
+// Регистрируем сцену создания матча
+
+
+// stage.register(create);
+const { createOrderWizzardScene } = require('./wizzards/createOrderWizzard');
+stage.register(createOrderWizzardScene);
+bot.use(session());
+bot.use(stage.middleware());
+
+function createApartmentButtons(allApartments) {
+    // const inlineMessageRatingKeyboard = [[
+    //     { text: '👍', callback_data: 'like' },
+    //     { text: '👎', callback_data: 'dislike' }
+    // ]];
+    // ctx.reply('Тут есть кнопки', {
+    //     reply_markup: JSON.stringify({
+    //         inline_keyboard: inlineMessageRatingKeyboard
+    //     })
+    // });
+    try {
+        const inlineApartmentKeyBoard = allApartments.map((room) => {
+            return [{
+                text: room.address, callback_data: JSON.stringify({
+                    type: 'create_order',
+                    value: room.id
+                })
+            }];
+        });
+        return inlineApartmentKeyBoard;
+    } catch (e) {
+        return [];
+    }
+
+}
+
+async function showAllMetroBotButtons(ctx) {
+
+}
+
+bot.start(async (ctx) => {
+    try {
+
+        let result = await axios.get(API_DOMAIN + '/api/apartments/all');
+        // выводим список кнопок НАКОНЕЦ_ТО
+        const options = {
+            reply_markup: JSON.stringify({
+                // TODO: в отдельный модуль
+                inline_keyboard: createApartmentButtons(result.data.apartments)
+            })
+        }
+        // ctx.reply(`${JSON.stringify(result.data) + 'data'}`)
+        ctx.reply('Выберите  квартиру', options);
+    } catch (e) {
+        console.log(e)
+    }
+
+    // ctx.reply('Добрый день выберите квартиру в которой хотите заселиться');
+
+});
+
+// const { convertData } = require('./utils/timeconvert');
+// bot.hears('1ое сентября 2020', (ctx) => {
+//     console.log(ctx.message.text);
+
+//     const testDate = convertData(ctx.message.text);
+//     let str = `${testDate.day}.${testDate.month}.${testDate.year}`;
+//     // ctx.reply('test mode here' + str);
+// });
+bot.on('message', (ctx) => {
+
+    // const inlineMessageRatingKeyboard = [[
+    //     { text: '👍', callback_data: 'like' },
+    //     { text: '👎', callback_data: 'dislike' }
+    // ]];
+    // ctx.reply('Тут есть кнопки', {
+    //     reply_markup: JSON.stringify({
+    //         inline_keyboard: inlineMessageRatingKeyboard
+    //     })
+    // });
+
+
+    // ctx.scene.enter("create_order");
+    // ctx.reply('send MEssage')
+});
+
+
+const handleTelegrafCallBackQuery = bot => {
+    return ctx => {
+        let strData = ctx.callbackQuery.data;
+        const { type, value } = JSON.parse(strData);
+        // console.log({ value });
+
+        if (type === 'create_order') {
+            // создаем Order
+            ctx.session.selectedApartmentId = value;
+            if (!ctx.session.orderInfo) {
+                ctx.session.orderInfo = {
+                    "client": {
+                        "name": "Павел",
+                        "phone": 88001234516,
+                        "secondName": "Карлов",
+                        "email": "buratin@mail.ru"
+                    },
+                    // заполняем apartments[id]
+                    "apartments": {
+                        [ctx.session.selectedApartmentId]: {},
+                    }
+                };
+            }
+            ctx.reply("Отлично: введите ваше имя");
+            ctx.scene.enter("create_order");
+        }
+    };
+}
+
+bot.on('callback_query', handleTelegrafCallBackQuery(bot));
+// bot.action("create_order", (ctx) => {
+//     // ctx.scene.enter("create")
+// });
+// bot.help((ctx) => ctx.reply('Send me a sticker'))
+// bot.on('sticker', (ctx) => ctx.reply('👍'))
+// bot.hears('hi', (ctx) => ctx.reply('Hey there'))
+bot.launch();
+
+
+
+
+// old bot
+// bot.on('message', handleBotMessage(bot));
+// bot.on('callback_query', handleBotCallBackQuery(bot));
+// bot.on("polling_error", console.log);
 
 
 require('./routes/main.routes')(app);
-// app.post('/api/create-order', async (req, res) => {
-// });
+require('./routes/apartment-subway.routes')(app);
+require('./routes/apartment.routes')(app);
+(async () => {
+
+})()
 app.get('/api/create-order', async (req, res) => {
     let uid;
     let services = [2, 5, 7]; // services.uids
@@ -81,9 +285,11 @@ app.get('/api/create-order', async (req, res) => {
                 address: apartment.address,
                 // TODO: высчитывать цену в зависимости от кол-ва человек и услуг(services)
                 price: apartment.price,
+                fromDate: roomsInfo[apartmentId].fromDate,
+                toDate: roomsInfo[apartmentId].toDate,
                 services: roomsInfo[apartmentId].services,
                 withChilds: roomsInfo[apartmentId].withChilds,
-                withAnimals: roomsInfo[apartmentId].withAnimals
+                withAnimals: roomsInfo[apartmentId].withAnimals,
             });
         } catch (e) {
             roomsInfoErrors.push({
@@ -131,7 +337,6 @@ app.get('/api/order-look', async (req, res) => {
     let orders = await Order.findAll();
     return res.json(orders);
     let order = {
-
         client: {
             name: 'Петр',
             secondname: 'Соколов',

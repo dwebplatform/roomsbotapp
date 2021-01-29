@@ -1,24 +1,87 @@
-const { Apartment, Order } = require('../models')
+const { Apartment, Order } = require('../models');
+const paginate = require('express-paginate');
+const { Op } = require('sequelize');
 
-
-
-exports.getAllOrders = async (req, res) => {
-
+exports.updateStatus = async (req, res) => {
     try {
-        let orders = await Order.findAll();
-        if (!orders) {
+        //req.body
+        let { orderId, selectedStatus } = req.body;
+        // return res.json({
+        //     selectedStatus
+        // });
+        let findedOrder = await Order.findOne({
+            where: {
+                id: orderId
+            }
+        });
+        if (findedOrder instanceof Order) {
+            findedOrder.status = selectedStatus;
+            await findedOrder.save();
             return res.json({
-                status: 'error',
-                msg: 'не удалось найти ни одного заказа'
+                status: 'ok',
+                msg: 'succefully updated'
             });
         }
+        return res.json({
+            status: 'error',
+            msg: 'Не удалось обновить статус'
+        })
+    } catch (e) {
+        console.log({ e })
+        return res.json({
+            status: 'error',
+            err: e
+        });
+    }
+
+}
+exports.getAllOrders = async (req, res) => {
+
+    let { from, to } = req.query;
+
+    const filterObject = { limit: req.query.limit, offset: req.skip, where: {} };
+    if (from) {
+        filterObject.where = {
+            ...filterObject.where,
+            fromDate: {
+                [Op.gte]: from
+            }
+        }
+    }
+    if (to) {
+        filterObject.where = {
+            ...filterObject.where,
+            toDate: {
+                [Op.lte]: to
+            }
+        }
+    };
+    try {
+        let ordersWithCount = await Order.findAndCountAll(filterObject);
+        const itemCount = ordersWithCount.count;
+        const pageCount = Math.ceil(ordersWithCount.count / (req.query.limit || 1));
 
         return res.json({
             status: 'ok',
-            orders: orders
-        })
+            orders: ordersWithCount.rows,
+            pageCount,
+            itemCount,
+            pages: paginate.getArrayPages(req)(3, pageCount, req.query.page)
+        });
+        // let orders = await Order.findAll();
+        // if (!orders) {
+        //     return res.json({
+        //         status: 'error',
+        //         msg: 'не удалось найти ни одного заказа'
+        //     });
+        // }
+
+        // return res.json({
+        //     status: 'ok',
+        //     orders: orders
+        // })
     } catch (e) {
-        console.log(e)
+
         return res.json({
             status: 'error',
             msg: 'не удалось получить заказы'
@@ -40,12 +103,14 @@ exports.createOrder = async (req, res) => {
             msg: 'не был передан телефон или email'
         });
     }
-
     let orderObject = await getOrderObject(req.body.orderInfo);
     try {
         let orderInstance = await Order.create({
+
             status: 0,//TODO: менять статусы в зависимости от индекса,
-            fullInfo: orderObject
+            fullInfo: orderObject,
+            fromDate: req.body.orderInfo.fromDate || new Date().getTime() / 1000,
+            toDate: req.body.orderInfo.toDate || new Date().getTime() / 1000
         });
         if (orderInstance) {
             return res.json({
@@ -60,16 +125,11 @@ exports.createOrder = async (req, res) => {
         }
 
     } catch (e) {
-        console.log(e)
         return res.json({
             status: 'error',
             msg: 'error'
         })
     }
-    return res.json({
-        status: 'ok',
-        order: orderObject
-    })
 }
 
 
@@ -78,6 +138,7 @@ async function getOrderObject({ client, apartments }) {
         client: {
             name: client.name || 'Аноним',
             secondname: client.secondName || '',
+            age: client.age,
             email: client.email,
             phone: client.phone,
         },
@@ -101,9 +162,10 @@ async function getOrderObject({ client, apartments }) {
             orderObject.rooms.push({
                 id: apartment.id,
                 address: apartment.address,
-                // TODO: высчитывать цену в зависимости от кол-ва человек и услуг(services)
                 price: apartment.price,
                 totalPrice: totalPrice,
+                fromDate: apartments[apartmentId].fromDate,
+                toDate: apartments[apartmentId].toDate,
                 personsAmount: apartments[apartmentId].personsAmount || 1,
                 roomAmount: apartment.roomAmount,
                 services: apartments[apartmentId].services,
@@ -122,7 +184,7 @@ async function getOrderObject({ client, apartments }) {
     return orderObject;
 }
 
-
+//TODO: спросить как вычислять цену
 function calculatePrice(price, amountOfPerson) {
     return price + amountOfPerson * 500;
 }
