@@ -7,8 +7,6 @@ let DOMAIN_ROOT = process.env.DOMAIN_ROOT;
 
 //TODO: доделать конвертацию из русского в английский потом в moment -> в норvальную дату 22.01.2020
 
-
-
 /**
  * это индекс "apartments":
  *   "3":{
@@ -19,7 +17,6 @@ let DOMAIN_ROOT = process.env.DOMAIN_ROOT;
          }
  */
 const WizardScene = Scenes.WizardScene;
-const Stage = Scenes.Stage;
 const createOrderWizzardScene = new WizardScene(
     "create_order", // Имя сцены
     (ctx) => {

@@ -1,0 +1,7 @@
+
+
+url:http://localhost:8000/api/order/create 
+body:
+{
+    "orderInfo":{"client":{"name":"Иван","phone":88001234516,"secondName":"Карлов","email":"buratin@mail.ru"},"apartments":{"5":{"fromDate":"21.01.2019","services":["это тест из телеграма","платок из телеграма","Сообщение из телеграмма"],"toDate":"22.09.2021","personsAmount":"5","withChilds":true,"withAnimals":false}}}
+}

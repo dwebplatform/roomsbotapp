@@ -7,7 +7,6 @@ const path = require('path');
 const Sequelize = require('sequelize');
 const express = require('express');
 var bodyParser = require('body-parser')
-const { handleBotMessage, handleBotCallBackQuery } = require('./botUtils');
 
 const app = express();
 const paginate = require('express-paginate');
@@ -107,9 +106,12 @@ const stage = new Stage();
 
 // stage.register(create);
 const { createOrderWizzardScene } = require('./wizzards/createOrderWizzard');
-stage.register(createOrderWizzardScene);
+const { subwayAndOrderWizzard } = require('./wizzards/subwayAndOrderWizzardSecond');
+stage.register(createOrderWizzardScene, subwayAndOrderWizzard);
 bot.use(session());
 bot.use(stage.middleware());
+
+
 
 function createApartmentButtons(allApartments) {
     // const inlineMessageRatingKeyboard = [[
@@ -137,39 +139,38 @@ function createApartmentButtons(allApartments) {
 
 }
 
-async function showAllMetroBotButtons(ctx) {
+/**
+  * try {
+     const inlineApartmentKeyBoard = allApartments.map((room) => {
+         return [{
+             text: room.address, callback_data: JSON.stringify({
+                 type: 'create_order',
+                 value: room.id
+             })
+         }];
+     });
+     return inlineApartmentKeyBoard;
+ } catch (e) {
+     return [];
+ }
+  */
 
-}
+// список кнопок из всех кнопок
+//TODO нижний комментарий это все квартиры
+const superBotHelper = require('./botHelpers/superBotHelpers');
+// bot.start(choseApartmentBotButtons);
+// bot.start(superBotHelper.startCommands.subwayStart);
 
-bot.start(async (ctx) => {
-    try {
-
-        let result = await axios.get(API_DOMAIN + '/api/apartments/all');
-        // выводим список кнопок НАКОНЕЦ_ТО
-        const options = {
-            reply_markup: JSON.stringify({
-                // TODO: в отдельный модуль
-                inline_keyboard: createApartmentButtons(result.data.apartments)
-            })
-        }
-        // ctx.reply(`${JSON.stringify(result.data) + 'data'}`)
-        ctx.reply('Выберите  квартиру', options);
-    } catch (e) {
-        console.log(e)
-    }
-
-    // ctx.reply('Добрый день выберите квартиру в которой хотите заселиться');
-
-});
-
-// const { convertData } = require('./utils/timeconvert');
-// bot.hears('1ое сентября 2020', (ctx) => {
-//     console.log(ctx.message.text);
-
-//     const testDate = convertData(ctx.message.text);
-//     let str = `${testDate.day}.${testDate.month}.${testDate.year}`;
-//     // ctx.reply('test mode here' + str);
-// });
+bot.start((ctx) => {
+    // superBotHelper.startCommands.subwayStart(ctx);
+    ctx.reply("Добро пожаловать в бот поиск квартиры здесь вы можете найти квартиру на любой вкус", Markup.inlineKeyboard([{
+        text: 'Начать',
+        callback_data: JSON.stringify({
+            type: 'start_chat'
+        })
+    }]));
+    // ctx.scene.enter("subway_and_order");
+})
 bot.on('message', (ctx) => {
 
     // const inlineMessageRatingKeyboard = [[
@@ -181,19 +182,19 @@ bot.on('message', (ctx) => {
     //         inline_keyboard: inlineMessageRatingKeyboard
     //     })
     // });
-
-
     // ctx.scene.enter("create_order");
     // ctx.reply('send MEssage')
 });
-
 
 const handleTelegrafCallBackQuery = bot => {
     return ctx => {
         let strData = ctx.callbackQuery.data;
         const { type, value } = JSON.parse(strData);
         // console.log({ value });
-
+        if (type === 'start_chat') {
+            superBotHelper.startCommands.subwayStart(ctx)
+            ctx.scene.enter("subway_and_order");
+        }
         if (type === 'create_order') {
             // создаем Order
             ctx.session.selectedApartmentId = value;

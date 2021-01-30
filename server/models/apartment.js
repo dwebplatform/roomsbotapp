@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   Apartment.init({
     address: DataTypes.STRING,
     price: DataTypes.INTEGER,
+    isVip: DataTypes.BOOLEAN,
     roomAmount: DataTypes.INTEGER,
     images: DataTypes.STRING
   }, {
