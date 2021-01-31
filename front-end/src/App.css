@@ -1,0 +1,44 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body{
+  margin: 0;
+  padding: 0;
+}
+.main-container {
+  display: flex;
+  flex-flow: column;
+  padding: 1rem; 
+}
+.main-container__item{
+  margin: 10px;
+}
+.order__status-btn-container {
+  display: flex;
+  justify-content: center;
+}
+.order__status-btn{
+  padding: 0.5rem 1rem;
+  font-size: 1.2rem;
+
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  background-color: #FF0000	;
+  margin: 0 auto 0 6px;
+}
+.main-navigation{
+  padding-left: 2rem;
+  font-size: 1.5rem;
+  color:  rgb(32, 47, 179);
+}
+
+.my-link{
+  cursor: pointer;
+}
+
+.paddinger{
+  padding: 2rem;
+}

@@ -1,0 +1,32 @@
+.apartment-container{
+    width: 100%;
+    display: flex;
+    
+}
+.apartment-list-container{
+    flex:1;
+}
+
+.current-apartment-container{
+    flex:4;
+    padding: 2rem;
+    margin: 2rem ​auto auto 1rem;
+}
+.current-apartment-container__item{
+    display: flex;
+    flex-flow: column;
+    margin: auto auto 15px auto;
+}
+.apartment-list-container__item-list{
+}
+.current-apartment-container__field{
+    flex:1;
+    display: flex;
+    justify-content: space-around;
+}
+.curretn-apartment-container__field-label{
+    margin:  4px;
+}
+.pointer{
+    cursor: pointer;
+}
