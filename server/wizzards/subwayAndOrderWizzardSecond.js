@@ -4,7 +4,7 @@ const { Scenes, Markup } = require('telegraf');
 const { default: axios } = require('axios');
 let DOMAIN_ROOT = process.env.DOMAIN_ROOT;
 const { ApartmentApi } = require('../apiinterfaces/ApartmentApi');
-const superBotHelper = require('../botHelpers/superBotHelpers');
+// const superBotHelper = require('../botHelpers/superBotHelpers');
 const apartmentApiInstance = new ApartmentApi();
 /** 
  * ! вот такой интерфейс должен иметь пришедший объект
@@ -13,14 +13,14 @@ const apartmentApiInstance = new ApartmentApi();
  * !}
  */
 function createRoomsAmountButton(roomsAmountAndIds) {
-    let allProms = Object.keys(roomsAmountAndIds).map((roomsAmount) => {
+    let roomsButtons = Object.keys(roomsAmountAndIds).map((roomsAmount) => {
         let roomsIdsStr = roomsAmountAndIds[roomsAmount].join(':');
         return [{
             text: roomsAmount,
             callback_data: JSON.stringify({ type: "press_room_amount", value: `${roomsAmount}:${roomsIdsStr}` })
         }];
     });
-    return allProms;
+    return roomsButtons;
 }
 // на вход принимает массив id
 function createApartmentButtonWithCertainAmountOfRooms(apartments) {
@@ -53,7 +53,6 @@ const subwayAndOrderWizzard = new WizardScene(
     },
     (ctx) => {
         if (isButtonPressed(ctx)) {// нажали на кнопку с определенным метро
-            // ctx.reply(ctx.update.callback_query.data);
             let data = JSON.parse(ctx.update.callback_query.data) || {
                 type: 'error'
             };
@@ -62,10 +61,7 @@ const subwayAndOrderWizzard = new WizardScene(
             ctx.reply('Пожалуйста выберите сколько комнат должно быть в квартире');
         }
     }
-
-
 );
-
 
 function isButtonPressed(ctx) {
     return ctx.update && ctx.update.callback_query;
@@ -97,8 +93,6 @@ async function chooseSubwayButtonHandler(ctx, data) {
     // делаем запрос на получение квартир с таким метро и возвращаем кнопки
     let { data: responseData } = await apartmentApiInstance.getApartmetnsWithBySubWayId(value);
     if (responseData.status === 'ok') {
-        // сообщение после нажатия на кнопку выбора метро
-        // ctx.reply('Шаг после выбора id то есть получение количества квартир');
         try {
             let inlineKeyBoard = createRoomsAmountButton(responseData.roomsAmountWithApartmentsIds);
             ctx.reply('Выберите какое количество квартир вас интересует',
@@ -112,27 +106,7 @@ async function chooseSubwayButtonHandler(ctx, data) {
         ctx.reply('Для данного метро нет ни одной квартиры просим прощения');
         ctx.wizard.back();
     }
-
 }
-
-
-
-
-
-
-
-
-
-async function showMessageAfterSubwayChoose(ctx, responseData) {
-    try {
-        let inlineKeyBoard = createRoomsAmountButton(responseData.roomsAmountWithApartmentsIds);
-        ctx.reply('Вы выбрали метро с id', Markup.inlineKeyboard(inlineKeyBoard));
-    } catch (e) {
-        console.log({ ERROR: e })
-        ctx.reply('Произошла серверная ошибка');
-    }
-}
-
 
 function showApartmentsMessage(ctx, data) {
     console.log({ data: data })

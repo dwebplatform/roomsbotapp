@@ -10,28 +10,23 @@ var bodyParser = require('body-parser')
 
 const app = express();
 const paginate = require('express-paginate');
+const fileUpload = require('express-fileupload');
 
 
 
 app.use(paginate.middleware(10, 50));
+app.use(express.static('public'));
 // parse application/x-www-form-urlencoded
+app.use(fileUpload());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-
 const { Client, Apartment, Order, Service, ApartmentService, Subway, ApartmentSubway } = require('./models');
 
 /* many-to-many connections */
 
-
 // Movie.belongsToMany(Actor, { through: 'ActorMovies' });
 // Actor.belongsToMany(Movie, { through: 'ActorMovies' });
 /* end: many-to-many */
-
-const sequelize = new Sequelize('roombot_db', 'root', '', {
-    host: 'localhost',
-    dialect: 'mysql'
-});
 
 /**
  * ! sql connections 

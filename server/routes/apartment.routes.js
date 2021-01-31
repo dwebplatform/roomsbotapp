@@ -10,5 +10,7 @@ module.exports = (app) => { // роуты для тренеров
     const router = require("express").Router();
     router.get('/all-without-pagination', apartmentController.allApartmentsWithoutPaggination);
     router.get('/all', apartmentController.allApartments);
+
+    router.post('/create', apartmentController.createApartment);
     app.use('/api/apartments', router);
 };
