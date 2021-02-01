@@ -12,5 +12,7 @@ module.exports = (app) => { // роуты для тренеров
     router.get('/all', apartmentController.allApartments);
 
     router.post('/create', apartmentController.createApartment);
+    router.post('/delete-image-by-index', apartmentController.deleteImageByIndex);
+    router.get('/:apartmentId', apartmentController.getApartmentById);
     app.use('/api/apartments', router);
 };

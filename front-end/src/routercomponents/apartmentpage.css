@@ -17,6 +17,9 @@
     flex-flow: column;
     margin: auto auto 15px auto;
 }
+.apartment-list-container__item{
+    margin: 2rem auto 0 1rem;
+}
 .apartment-list-container__item-list{
 }
 .current-apartment-container__field{
@@ -24,9 +27,20 @@
     display: flex;
     justify-content: space-around;
 }
-.curretn-apartment-container__field-label{
+.current-apartment-container__field-label{
     margin:  4px;
 }
 .pointer{
+    cursor: pointer;
+}
+.image-container{
+    display: flex;
+}
+.delete-image{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end; 
+}
+.delete-image-btn{
     cursor: pointer;
 }

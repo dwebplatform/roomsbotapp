@@ -3,6 +3,23 @@ const { Markup } = require('telegraf');
 const API_DOMAIN = 'http://localhost:8000';
 
 
+// использовать каждый раз, когда нужно сохранить сообщения, для того, чтобы его удалить
+function saveBotMessageIdForDeleted(ctx, message_id) {
+    if (!ctx.session.deletedMessageIds) {
+        ctx.session.deletedMessageIds = [];
+    }
+    ctx.session.deletedMessageIds.push(message_id);
+}
+
+
+function deleteBotMessages(ctx) {
+    if (ctx.session.deletedMessageIds && ctx.session.deletedMessageIds.length) {
+        ctx.session.deletedMessageIds.forEach((id) => {
+            ctx.tg.deleteMessage(ctx.chat.id, id);
+        });
+        ctx.session.deletedMessageIds = [];
+    }
+}
 function createSubwayButtons(allSubways) {
     try {
         let subArray = [];
@@ -52,8 +69,8 @@ async function showAllSubwayBotButtons(ctx) {
         console.log(result.data.status);
         subways = result.data.subways || [];
         let inlineKeyBoard = createSubwayButtons(subways);
-        ctx.reply('Выберите метро рядом с которым вы бы хотели приобрести квартиру', Markup.inlineKeyboard(inlineKeyBoard));
-
+        let info = await ctx.reply('Выберите метро рядом с которым вы бы хотели приобрести квартиру', Markup.inlineKeyboard(inlineKeyBoard));
+        superBotHelper.saveBotMessageIdForDeleted(ctx, info.message_id);
     } catch (e) {
         console.log(e);
         ctx.reply('Простите произошла серверная ошибка');
@@ -79,9 +96,11 @@ async function choseApartmentBotButtons(ctx) {
 
 
 const superBotHelper = {
+    deleteBotMessages: deleteBotMessages,
+    saveBotMessageIdForDeleted: saveBotMessageIdForDeleted,
     startCommands: {
         roomsStart: choseApartmentBotButtons,
-        subwayStart: showAllSubwayBotButtons
+        subwayStart: showAllSubwayBotButtons,
     }
 };
 

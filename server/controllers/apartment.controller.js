@@ -4,8 +4,71 @@ const { Apartment } = require('../models');
 const paginate = require('express-paginate');
 const rootPath = require('app-root-path');
 const uid = require('uniqid');
+
+
+
+
+
+
+
+
+
+
+exports.deleteImageByIndex = async (req, res) => {
+
+    let { apartmentId, imageIndex } = req.body;
+    if ((typeof apartmentId === 'undefined') || (typeof imageIndex === 'undefined')) {
+        return res.json({
+            status: 'error',
+            msg: "не удалось удалить фотографию 1"
+        })
+    }
+    try {
+        let curentApartment = await Apartment.findOne({
+            where: {
+                id: apartmentId,
+            }
+        })
+        if (!(curentApartment instanceof Apartment)) {
+            return res.json({
+                status: 'error',
+                msg: "не удалось найти квартиры с данным id "
+            });
+        }
+        let images = curentApartment.images || [];
+        let imagesResult = images.filter((item, index) => index != imageIndex);
+        curentApartment.images = imagesResult;
+        try {
+            await curentApartment.save();
+            return res.json({
+                status: 'ok',
+                msg: 'succefully saved'
+            });
+        } catch (e) {
+            return res.json({
+                status: 'error',
+                msg: "не удалось удалить фотографию"
+            })
+        }
+
+    } catch (e) {
+        return res.json({
+            status: 'error',
+            msg: "не удалось удалить фотографию"
+        })
+
+    }
+
+    return res.json({
+        status: 'ok',
+        msg: 'image deleted by index'
+    })
+}
+
+
+
 const loadAsync = async (file, path) => {
-    file.mv(`${rootPath}/server/public/${path}`, (err) => {
+    file.mv(`${rootPath}/server/public${path}`, (err) => {
         if (err) {
             throw new Error('не удалось загрузить данную фотографию');
         }
@@ -15,15 +78,48 @@ const loadAsync = async (file, path) => {
 async function getImagesForApartment(imageInstances) {
     let imagePaths = [];
     for (let key in imageInstances) {
-        let curPath = 'img/__APARTMENT_UID' + uid();
+        let curPath = '/img/__APARTMENT_UID' + uid();
         try {
-            await loadAsync(imageInstances[key], 'img/__APARTMENT__UID__' + uid());
+            await loadAsync(imageInstances[key], curPath);
             imagePaths.push(curPath);
         } catch (e) {
         }
     }
     return imagePaths;
 }
+
+
+exports.getApartmentById = async (req, res) => {
+    let { apartmentId } = req.params;
+    try {
+        let curApartment = await Apartment.findOne({
+            where: {
+                id: apartmentId
+            },
+            //TODO: включить  метро
+        });
+        if (!curApartment) {
+            return res.json({
+                status: 'error',
+                msg: 'не удалось комнаты с данным id'
+            });
+        }
+        return res.json({
+            status: 'ok',
+            apartment: curApartment
+        });
+    } catch (e) {
+        return res.json({
+            status: 'error',
+            msg: 'не удалось найти комнаты с данным id'
+        });
+    }
+    return res.json({
+        status: 'ok',
+        msg: 'Now you get the result'
+    })
+}
+
 exports.createApartment = async (req, res) => {
 
     let { address, isVip, roomAmount, price } = req.body;
@@ -53,9 +149,8 @@ exports.createApartment = async (req, res) => {
             isVip: !!isVip,
             roomAmount: roomAmount || 1,
             price: price,
-            images: JSON.stringify(allPaths)
+            images: allPaths
         });
-
         if (!newApartmentInstance) {
             return res.json({
                 status: 'error',

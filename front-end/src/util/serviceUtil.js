@@ -3,6 +3,22 @@ import axios from 'axios';
 export class ServiceUtilContainer {
     constructor() {
     }
+
+
+    async deleteApartmentImageByIndex(apartmentId, imageIndex) {
+        let response = await axios.post(`/api/apartments/delete-image-by-index`, {
+            apartmentId, imageIndex
+        });
+        return response;
+    }
+    async getApartmentById(apartmentId) {
+        let response = await axios.get(`/api/apartments/${apartmentId}`);
+        return response;
+    }
+    async getAllApartments() {
+        let response = await axios.get('/api/apartments/all-without-pagination');
+        return response;
+    }
     async createApartment(data) {
         // формируем formData
         let formData = new FormData();

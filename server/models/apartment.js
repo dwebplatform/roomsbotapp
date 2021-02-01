@@ -18,7 +18,15 @@ module.exports = (sequelize, DataTypes) => {
     price: DataTypes.INTEGER,
     isVip: DataTypes.BOOLEAN,
     roomAmount: DataTypes.INTEGER,
-    images: DataTypes.STRING
+    images: {
+      type: DataTypes.STRING,
+      get: function () {
+        return JSON.parse(this.getDataValue('images'));
+      },
+      set: function (value) {
+        this.setDataValue('images', JSON.stringify(value));
+      },
+    }
   }, {
     sequelize,
     modelName: 'Apartment',

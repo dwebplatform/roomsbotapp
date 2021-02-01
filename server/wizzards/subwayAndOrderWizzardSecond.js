@@ -4,6 +4,7 @@ const { Scenes, Markup } = require('telegraf');
 const { default: axios } = require('axios');
 let DOMAIN_ROOT = process.env.DOMAIN_ROOT;
 const { ApartmentApi } = require('../apiinterfaces/ApartmentApi');
+const superBotHelper = require('../botHelpers/superBotHelpers');
 // const superBotHelper = require('../botHelpers/superBotHelpers');
 const apartmentApiInstance = new ApartmentApi();
 /** 
@@ -22,7 +23,7 @@ function createRoomsAmountButton(roomsAmountAndIds) {
     });
     return roomsButtons;
 }
-// на вход принимает массив id
+// на вход принимает массив id квартир
 function createApartmentButtonWithCertainAmountOfRooms(apartments) {
     try {
         const inlineApartmentKeyBoard = apartments.map((room) => {
@@ -103,8 +104,9 @@ async function chooseSubwayButtonHandler(ctx, data) {
             ctx.reply('Произошла серверная ошибка');
         }
     } else {
-        ctx.reply('Для данного метро нет ни одной квартиры просим прощения');
-        ctx.wizard.back();
+        superBotHelper.deleteBotMessages(ctx);
+        superBotHelper.startCommands.subwayStart(ctx);
+        ctx.reply('Для данного метро нет ни одной квартиры просим прощения ');
     }
 }
 
