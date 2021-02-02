@@ -42,7 +42,7 @@ export const OrderPage = () => {
                 <FilterOrderComponent curentFilter={{ ...filterObject }} filterHandleChange={handleFilterChange} />
             </div>
             <main className="main-container">
-                {error && <pre>JSON.stringify(error)</pre>}
+                {error && <pre>{JSON.stringify(error)}</pre>}
                 <OrderList />
             </main>
             <nav className="main-navigation" aria-label="Orders navigation ">

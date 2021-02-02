@@ -99,3 +99,21 @@
     color: #dc3545;
     position: absolute;
 }
+.apartment-service-container{
+}
+.apartment-service-container-item{
+    border: 1px solid #eeee;
+    padding: 0.25rem 1rem;
+    margin-top: 1rem;
+    margin-right: 1rem;
+    border-radius: 6px;
+    position: relative;
+}
+
+.apartment-service-icon{
+    position: absolute;
+    top: -15%;
+    color: #dc3545;
+    cursor: pointer;
+    left: 90%;
+}

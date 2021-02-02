@@ -14,7 +14,17 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Subway.init({
-    name: DataTypes.STRING
+    name: DataTypes.STRING,
+    geo: {
+      type: DataTypes.STRING,
+      get: function () {
+        return JSON.parse(this.getDataValue('geo'));
+      },
+      set: function (value) {
+        this.setDataValue('geo', JSON.stringify(value));
+      },
+    },
+
   }, {
     sequelize,
     modelName: 'Subway',

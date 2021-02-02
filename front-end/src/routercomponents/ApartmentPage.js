@@ -2,14 +2,14 @@
 import axios from 'axios';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {useField} from 'react-hooks-lib';
-import {BsXCircle} from 'react-icons/bs';
+import { useField } from 'react-hooks-lib';
+import { BsXCircle } from 'react-icons/bs';
 import './apartmentpage.css';
-import {objectHasProps} from '../util/helpers';
+import { objectHasProps } from '../util/helpers';
 
 
-import { createOrderAction, removeSubWayFromApartmentAction, deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
-import { BrowserRouter,Redirect, Link, Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
+import { addServiceToApartmentAction, getAllServiceAction, createOrderAction, deleteServiceFromApartmentAction, getServicesForApartmentAction, removeSubWayFromApartmentAction, deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
+import { BrowserRouter, Redirect, Link, Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 
 
 export function useApartmentUpdate(apartmentId, apartment) {
@@ -18,22 +18,22 @@ export function useApartmentUpdate(apartmentId, apartment) {
         price: 2500,
         roomAmount: 1,
         isVip: "0",
-        subways:[],
+        subways: [],
     });
     const dispatch = useDispatch();
     useEffect(() => {
-         
+
         // console.log(objectHasProps(apartment,['address','price','roomAmount','isVip','Subways']));
-    if(objectHasProps(apartment,['address','price','roomAmount','isVip','Subways'])){
-        setEditFields({
-            address: apartment.address,
-            price: apartment.price,
-            roomAmount: apartment.roomAmount,
-            isVip: apartment.isVip? "1":"0",
-            subways:apartment.Subways,
-        });
-    }
-      }, [apartment,apartmentId]);
+        if (objectHasProps(apartment, ['address', 'price', 'roomAmount', 'isVip', 'Subways'])) {
+            setEditFields({
+                address: apartment.address,
+                price: apartment.price,
+                roomAmount: apartment.roomAmount,
+                isVip: apartment.isVip ? "1" : "0",
+                subways: apartment.Subways,
+            });
+        }
+    }, [apartment, apartmentId]);
     return [editFields, setEditFields];
 }
 
@@ -45,16 +45,16 @@ const EditApartment = () => {
     }, [apartmentId]);
 
     const { data: apartment, error, loading } = useSelector((state) => state.apartment);
-    const { apartmentImageDeleted, removeSubWayFromApartmentSuccess, successfullyAdded , deletedApartmentSuccess} = useSelector((state) => state.popupInfo);
-    const [editFields, setEditFields] = useApartmentUpdate(apartmentId,apartment);
-    
+    const { apartmentImageDeleted, removeSubWayFromApartmentSuccess, successfullyAdded, deletedApartmentSuccess } = useSelector((state) => state.popupInfo);
+    const [editFields, setEditFields] = useApartmentUpdate(apartmentId, apartment);
+
     const handleBasicFieldsChange = (e) => {
         setEditFields((prevState) => {
             return {
                 ...prevState,
                 [e.target.name]: e.target.value
             }
-        });    
+        });
     }
     // добавляем image для текущей комнаты
     const [addedImages, setAddedImages] = useState([]);
@@ -63,22 +63,22 @@ const EditApartment = () => {
         let files = e.target.files;
         if (files.length > 0) {
             let src = URL.createObjectURL(e.target.files[0]);
-            if(preloadedUrls.length<10){
-                setPreloadedUrls([...preloadedUrls,src]);
+            if (preloadedUrls.length < 10) {
+                setPreloadedUrls([...preloadedUrls, src]);
             }
             setAddedImages((prevState) => {
                 return [...prevState, e.target.files[0]];
             });
         }
     }
-    if(removeSubWayFromApartmentSuccess){ // при успешном удалении перезагрузить
+    if (removeSubWayFromApartmentSuccess) { // при успешном удалении перезагрузить
         document.location.reload();
     }
-    if(successfullyAdded){// после добавления изображений
+    if (successfullyAdded) {// после добавления изображений
         document.location.reload();
     }
-    if(deletedApartmentSuccess){// после удаления квартиры
-        return <Redirect to='/apartments'/>;
+    if (deletedApartmentSuccess) {// после удаления квартиры
+        return <Redirect to='/apartments' />;
     }
     if (apartmentImageDeleted) {// после каждого удаления изображения
         document.location.reload();
@@ -97,11 +97,11 @@ const EditApartment = () => {
     const handleAddImagesToApartment = () => {
         dispatch(addNewImageToApartmentAction(apartmentId, [...addedImages]));
     }
-    const handleDeleteApartment=()=>{
+    const handleDeleteApartment = () => {
         dispatch(deleteApartmentByIdAction(apartmentId));
     }
-    const handleDeleteSubWayFromApartment=(subwayId)=>{
-        dispatch(removeSubWayFromApartmentAction(apartmentId,subwayId));
+    const handleDeleteSubWayFromApartment = (subwayId) => {
+        dispatch(removeSubWayFromApartmentAction(apartmentId, subwayId));
     }
     return (
         <div className="edit-apartment-container">
@@ -143,7 +143,7 @@ const EditApartment = () => {
                 </div>
             </div>
             <div className="preloaded-image-container">
-                {preloadedUrls.map((item, index)=>{
+                {preloadedUrls.map((item, index) => {
                     return <div className="preloaded-image-container__item" key={index} ><img className="img-thumbnail apartment-image" src={item} /></div>
                 })}
             </div>
@@ -159,17 +159,19 @@ const EditApartment = () => {
                 </select>
             </div>
             <div className="all-subway-for-apartment-container d-flex">
-                
-                { (editFields.subways && editFields.subways.length) ?
-                    editFields.subways.map((subWayItem)=>{
+
+                {(editFields.subways && editFields.subways.length) ?
+                    editFields.subways.map((subWayItem) => {
                         return <span className="badge badge-light p-3 m-2 subway-item" key={subWayItem.id}>
-                        {subWayItem.name}
-                        <BsXCircle onClick={()=>handleDeleteSubWayFromApartment(subWayItem.id)} className="subway-item-icon"/>
+                            {subWayItem.name}
+                            <BsXCircle onClick={() => handleDeleteSubWayFromApartment(subWayItem.id)} className="subway-item-icon" />
                         </span>
                     }) : null
                 }
             </div>
-             <EditSubWayInput  apartmentId={apartmentId}/>
+            <EditSubWayInput apartmentId={apartmentId} />
+            <hr />
+            <EditServiceInput apartmentId={apartmentId} />
             <div className="edit-apartmentcontainer__item">
                 <label className="current-apartment-container__field-label">Фотографии</label>
                 <div className="image-container">
@@ -181,8 +183,8 @@ const EditApartment = () => {
                     }) : null}
                 </div>
             </div>
-            
-          
+
+
             <div className="current-apartment-container__item">
                 <div className="form-group">
                     <button className="btn btn-success w-100" onClick={handleEditApartment}>ИЗМЕНИТЬ</button>
@@ -316,43 +318,95 @@ const AddApartment = ({ handleAddApartmentListener }) => {
 }
 
 
+const EditServiceInput = ({ apartmentId }) => {
 
-const EditSubWayInput =({apartmentId})=>{
+
+    const { data: allServices, error, loading } = useSelector((state) => state.services);
+    const { data: services } = useSelector(state => state.servicesForCurrentApartment);
+    const { value: selectedServiceId, bind } = useField('null');
+    const dispatch = useDispatch();
+    console.log(allServices);
+    useEffect(() => {
+        dispatch(getAllServiceAction());
+    }, []);
+    useEffect(() => {
+        dispatch(getServicesForApartmentAction(apartmentId));
+    }, [apartmentId]);
+    const handleAddServiceToApartment = () => {
+        dispatch(addServiceToApartmentAction(apartmentId, selectedServiceId));
+    }
+    const handleDeleteServiceFromApartment = (apartmentId, serviceId) => {
+        dispatch(deleteServiceFromApartmentAction(apartmentId, serviceId));
+    }
+    return (<div className="edit-apartmentcontainer__item d-flex">
+        <div className="apartment-service-container">
+            {(services && services.length) ? (
+                services.map((item) => {
+                    return <span className="apartment-service-container-item"
+                        key={item.id}>{item.name}<BsXCircle
+                            onClick={() => { handleDeleteServiceFromApartment(apartmentId, item.id) }}
+                            className="apartment-service-icon" /></span>
+                })
+            ) : null}
+        </div>
+        <div className="form-group">
+            <select {...bind} className="form-control" >
+                <option value="null">выберите услугу</option>
+                {allServices.map((serviceInstance) => {
+                    let curServicesIds = services.map((el) => el.id);
+                    if (curServicesIds.includes(serviceInstance.id)) {
+                        return null;
+                    }
+                    return <option
+                        key={serviceInstance.id}
+
+                        value={serviceInstance.id}
+                    >{serviceInstance.name}</option>
+                })}
+            </select>
+        </div>
+        <div className="ml-3">
+            <button onClick={handleAddServiceToApartment} className="btn btn-success add-subway-btn">+</button>
+        </div>
+    </div>);
+}
+
+const EditSubWayInput = ({ apartmentId }) => {
 
     const dispatch = useDispatch();
-    const {data: subways, error, loading} = useSelector(state=>state.subwaysNotIncludedInApartment);
-    const popupInfo = useSelector(state=>state.popupInfo);
-    useEffect(()=>{
+    const { data: subways, error, loading } = useSelector(state => state.subwaysNotIncludedInApartment);
+    const popupInfo = useSelector(state => state.popupInfo);
+    useEffect(() => {
         dispatch(getAllSubWaysAction(apartmentId));
-    },[apartmentId]);
+    }, [apartmentId]);
 
     const { value: addedSubway, bind } = useField('null');
 
-    if(popupInfo.subwayAdded){// если успешно добавлено метро
+    if (popupInfo.subwayAdded) {// если успешно добавлено метро
         document.location.reload();
     }
-    const handleAddSubWayToApartment=()=>{
-        if(addedSubway=='null'){
+    const handleAddSubWayToApartment = () => {
+        if (addedSubway == 'null') {
             return;
         }
         // добавляем метро к текущей комнате
-        dispatch(addSubwayForApartmentAction(addedSubway,apartmentId));
+        dispatch(addSubwayForApartmentAction(addedSubway, apartmentId));
     }
-    return  (<div className="edit-apartmentcontainer__item d-flex" >
-                <div className="form-group">
-                <select {...bind} className="form-control" >
-                    <option value="null">выберите метро</option>
-                    {(subways &&subways.length) && (
-                        subways.map((item)=>{
-                            return <option key={item.id} value={item.id}>{item.name}</option>
-                        })
-                    )}
-                </select>
-                </div>
-                <div className="ml-3">
-                    <button onClick={handleAddSubWayToApartment} className="btn btn-success add-subway-btn">+</button>
-                </div>
-            </div>);
+    return (<div className="edit-apartmentcontainer__item d-flex" >
+        <div className="form-group">
+            <select {...bind} className="form-control" >
+                <option value="null">выберите метро</option>
+                {(subways && subways.length) && (
+                    subways.map((item) => {
+                        return <option key={item.id} value={item.id}>{item.name}</option>
+                    })
+                )}
+            </select>
+        </div>
+        <div className="ml-3">
+            <button onClick={handleAddSubWayToApartment} className="btn btn-success add-subway-btn">+</button>
+        </div>
+    </div>);
 }
 
 export const ApartmentPage = () => {
@@ -388,7 +442,9 @@ export const ApartmentPage = () => {
                         <AddApartment handleAddApartmentListener={handleAddApartment} />
                     </Route>
                     <Route path={`${path}/:apartmentId`}>
+
                         <EditApartment />
+
                     </Route>
                 </Switch>
             </section>

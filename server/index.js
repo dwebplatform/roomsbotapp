@@ -46,9 +46,8 @@ if (!(mode === 'dev')) {
 
 }
 app.use(express.static(path.join(__dirname, "..", "server/public")));
+
 // const { allMetros } = require('./allmetro');
-
-
 app.get('/generate-dummy-data', async (req, res) => {
     // let newApartment = await Apartment.create({
     //     address: 'ул Панферова д 3',
@@ -236,6 +235,7 @@ bot.launch();
 // bot.on("polling_error", console.log);
 
 
+require('./routes/services.routes')(app);
 require('./routes/main.routes')(app);
 require('./routes/apartment-subway.routes')(app);
 require('./routes/apartment.routes')(app);

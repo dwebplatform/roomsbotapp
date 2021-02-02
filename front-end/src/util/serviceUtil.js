@@ -5,7 +5,37 @@ export class ServiceUtilContainer {
     }
 
 
-    async removeSubWayFromApartment(apartmentId,subwayId){
+    async addServiceToApartment(apartmentId, selectedServiceId) {
+
+        let response = await axios.post('/api/services/add-to-apartment', {
+            apartmentId,
+            selectedServiceId
+        });
+        return response;
+    }
+
+    async getAllServices() {
+        let response = await axios.get('/api/services/all');
+        return response;
+    }
+
+    async deleteServiceFromApartmentAction(apartmentId, serviceId) {
+        let response = await axios.post('/api/services/remove-from-apartment', {
+            apartmentId,
+            serviceId
+        });
+        return response;
+
+    }
+    async getServicesForApartment(apartmentId) {
+        let response = await axios.get(`/api/services/all-for-apartment/${apartmentId}`);
+        return response;
+    }
+    async addSubway(name, geo) {
+        let response = await axios.post('/api/subway/add', { name, geo });
+        return response;
+    }
+    async removeSubWayFromApartment(apartmentId, subwayId) {
         let response = await axios.post(`/api/apartments/${apartmentId}/remove-subway/${subwayId}`);
         return response;
     }
