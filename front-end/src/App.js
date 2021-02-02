@@ -11,17 +11,7 @@ import { Header } from './routercomponents/Header';
 import { OrderPage } from './routercomponents/OrderPage';
 import { ApartmentPage } from './routercomponents/ApartmentPage';
 
-
-function Home() {
-  return <div></div>
-}
-
-
-
-
-
-
-
+//TODO : LOGIN PAGE
 function App() {
   return (
     <>
@@ -33,7 +23,6 @@ function App() {
         <Route path='/apartments'>
           <ApartmentPage />
         </Route>
-
       </Switch>
     </>
   );

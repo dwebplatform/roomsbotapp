@@ -1,89 +1,186 @@
 
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import {useField} from 'react-hooks-lib';
+
 import './apartmentpage.css';
+import {objectHasProps} from '../util/helpers';
 
-import { createOrderAction, deleteApartmentImageByIndexAction, getAllApartmentsAction, getApartmentByIdAction } from '../reducers/actions';
-import { BrowserRouter, Link, Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 
+import { createOrderAction,deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
+import { BrowserRouter,Redirect, Link, Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
+
+
+export function useApartmentUpdate(apartmentId, apartment) {
+    const [editFields, setEditFields] = useState({
+        address: '',
+        price: 2500,
+        roomAmount: 1,
+        isVip: "0",
+        subways:[],
+    });
+    const dispatch = useDispatch();
+    useEffect(() => {
+         
+        // console.log(objectHasProps(apartment,['address','price','roomAmount','isVip','Subways']));
+    if(objectHasProps(apartment,['address','price','roomAmount','isVip','Subways'])){
+        setEditFields({
+            address: apartment.address,
+            price: apartment.price,
+            roomAmount: apartment.roomAmount,
+            isVip: apartment.isVip? "1":"0",
+            subways:apartment.Subways,
+        });
+    }
+      }, [apartment,apartmentId]);
+    return [editFields, setEditFields];
+}
 
 const EditApartment = () => {
     let { apartmentId } = useParams();
     const dispatch = useDispatch();
     useEffect(() => {
-
         dispatch(getApartmentByIdAction(apartmentId))
-
     }, [apartmentId]);
+
     const { data: apartment, error, loading } = useSelector((state) => state.apartment);
-    const { apartmentImageDeleted } = useSelector((state) => state.popupInfo);
-    console.log({ apartmentImageDeleted });
-    if (apartmentImageDeleted) {
+    const { apartmentImageDeleted, successfullyAdded , deletedApartmentSuccess} = useSelector((state) => state.popupInfo);
+    const [editFields, setEditFields] = useApartmentUpdate(apartmentId,apartment);
+    
+    const handleBasicFieldsChange = (e) => {
+        setEditFields((prevState) => {
+            return {
+                ...prevState,
+                [e.target.name]: e.target.value
+            }
+        });    
+    }
+    // добавляем image для текущей комнаты
+    const [addedImages, setAddedImages] = useState([]);
+    const [preloadedUrls, setPreloadedUrls] = useState([]);// preloaded urls
+    const handleShowAddPreview = (e) => {
+        let files = e.target.files;
+        if (files.length > 0) {
+            let src = URL.createObjectURL(e.target.files[0]);
+            if(preloadedUrls.length<10){
+                setPreloadedUrls([...preloadedUrls,src]);
+            }
+            setAddedImages((prevState) => {
+                return [...prevState, e.target.files[0]];
+            });
+        }
+    }
+    if(successfullyAdded){// после добавления изображений
+        document.location.reload();
+    }
+    if(deletedApartmentSuccess){// после удаления квартиры
+        return <Redirect to='/apartments'/>;
+    }
+    if (apartmentImageDeleted) {// после каждого удаления изображения
         document.location.reload();
     }
     const handleEditApartment = (e) => {
-
+        console.log(editFields);
+        dispatch(updateBasicApartmentFieldsAction(apartmentId, editFields));
     }
     function apartmentHasImage(apartment) {
         return apartment.images && apartment.images.length
     }
-
-
     const handleDeleteImage = (imageIndex) => {
         dispatch(deleteApartmentImageByIndexAction(apartmentId, imageIndex));
     }
+
+    const handleAddImagesToApartment = () => {
+        dispatch(addNewImageToApartmentAction(apartmentId, [...addedImages]));
+    }
+    const handleDeleteApartment=()=>{
+        dispatch(deleteApartmentByIdAction(apartmentId));
+    }
     return (
-        <div className="edit-apartment-contaniner">
+        <div className="edit-apartment-container">
+            <div className="edit-apartmentcontainer__item form-group">
+                <label htmlFor={"apartment-adress-" + apartmentId}>Адрес:</label>
+                <input id={"apartment-adress-" + apartmentId} type="text" className="form-control"
+                    value={editFields.address}
+                    name="address"
+                    onChange={handleBasicFieldsChange}
+                />
+            </div>
+            <div className="edit-apartmentcontainer__item form-group">
+                <label htmlFor={"apartment-amount-" + apartmentId}>Количество комнат:</label>
+                <input id={"apartment-amount-" + apartmentId} type="text" className="form-control"
+                    value={editFields.roomAmount}
+                    name="roomAmount"
+                    onChange={handleBasicFieldsChange}
+                />
+            </div>
+            <div className="edit-apartmentcontainer__item form-group">
+                <label htmlFor={"apartment-price-" + apartmentId}>Цена:</label>
+                <input id={"apartment-price-" + apartmentId} type="text" className="form-control"
+                    value={editFields.price}
+                    name="price"
+                    onChange={handleBasicFieldsChange}
+                />
+            </div>
+
+            <div className="edit-apartmentcontainer__item form-group edit-apartmentcontainer__item--added-image">
+                <div className="custom-file">
+                    <input type="file" className="custom-file-input"
+                        id={"add-image-input" + apartmentId}
+                        onChange={handleShowAddPreview}
+                    />
+                    <label className="custom-file-label" htmlFor={"add-image-input" + apartmentId}>Choose file</label>
+                </div>
+                <div className="container" >
+                    <button className="btn btn-success" onClick={handleAddImagesToApartment} style={{ fontWeight: 'bold', fontSize: '16px' }}>+</button>
+                </div>
+            </div>
+            <div className="preloaded-image-container">
+                {preloadedUrls.map((item, index)=>{
+                    return <div className="preloaded-image-container__item" key={index} ><img className="img-thumbnail apartment-image" src={item} /></div>
+                })}
+            </div>
+            <div className="edit-apartmentcontainer__item form-group">
+                <label htmlFor={"apartment-status-" + apartmentId}>Статус квартиры:</label>
+                <select className="form-control" id={"apartment-status-" + apartmentId}
+                    name="isVip"
+                    value={editFields.isVip}
+                    onChange={handleBasicFieldsChange}
+                >
+                    <option value="1">VIP</option>
+                    <option value="0">Эконом</option>
+                </select>
+            </div>
+            <div className="all-subway-for-apartment-container">
+                
+            </div>
+             <EditSubWayInput  apartmentId={apartmentId}/>
             <div className="edit-apartmentcontainer__item">
                 <label className="current-apartment-container__field-label">Фотографии</label>
                 <div className="image-container">
                     {apartmentHasImage(apartment) ? apartment.images.map((image, imageIndex) => {
-                        return (<div className="image-item" key={imageIndex} style={{ width: '200px' }}>
+                        return (<div className="image-item" key={imageIndex} >
                             <div className="delete-image"><span className="delete-image-btn" onClick={() => handleDeleteImage(imageIndex)}>X</span></div>
-                            <img className="img-thumbnail" src={image} />
+                            <img className="img-thumbnail apartment-image" src={image} />
                         </div>)
                     }) : null}
-
                 </div>
             </div>
-            {/* {apartmentId} */}
-            {/* <div className="current-apartment-container__item">
-                {/* <div className="current-apartment-container__field">
-                    <label className="current-apartment-container__field-label">Адрес:</label>
-                    <input className="curretn-apartment-container__field-input form-control" type="text"
-                        onChange={handleAddressChange}
-                        value={apartmentFields.address}
-                    />
-                </div>
-            </div>
-            <div className="current-apartment-container__item">
-                <div className="current-apartment-container__field">
-                    <label className="current-apartment-container__field-label">Статус:</label>
-                    <select className="custom-select" onChange={handleIsVipChange} >
-                        <option value="1">VIP</option>
-                        <option value="0">Эконом</option>
-                    </select>
-                </div>
-            </div>
-            <div className="current-apartment-container__item">
-                <div className="current-apartment-container__field">
-                    <label className="current-apartment-container__field-label" >Количество комнат:</label>
-                    <input className="curretn-apartment-container__field-input form-control"
-                        onChange={handleRoomAmountChange}
-                        value={apartmentFields.roomAmount}
-                        type="text" />
-                </div>
-            </div> */}
+            
+          
             <div className="current-apartment-container__item">
                 <div className="form-group">
                     <button className="btn btn-success w-100" onClick={handleEditApartment}>ИЗМЕНИТЬ</button>
+                    <button className="btn btn-danger w-100 my-3" onClick={handleDeleteApartment} >УДАЛИТЬ КВАРТИРУ</button>
                 </div>
             </div>
 
         </div>
     )
 }
+
+
 
 
 const AddApartment = ({ handleAddApartmentListener }) => {
@@ -206,11 +303,49 @@ const AddApartment = ({ handleAddApartmentListener }) => {
 
 
 
+const EditSubWayInput =({apartmentId})=>{
+
+    const dispatch = useDispatch();
+    const {data: subways, error, loading} = useSelector(state=>state.subwaysNotIncludedInApartment);
+    const popupInfo = useSelector(state=>state.popupInfo);
+    useEffect(()=>{
+        dispatch(getAllSubWaysAction(apartmentId));
+    },[apartmentId]);
+
+    const { value: addedSubway, bind } = useField('null');
+
+    if(popupInfo.subwayAdded){// если успешно добавлено метро
+        document.location.reload();
+    }
+    const handleAddSubWayToApartment=()=>{
+        if(addedSubway=='null'){
+            return;
+        }
+        // добавляем метро к текущей комнате
+        dispatch(addSubwayForApartmentAction(addedSubway,apartmentId));
+    }
+    return  (<div className="edit-apartmentcontainer__item d-flex" >
+                <div className="form-group">
+                <select {...bind} className="form-control" >
+                    <option value="null">выберите метро</option>
+                    {(subways &&subways.length) && (
+                        subways.map((item)=>{
+                            return <option key={item.id} value={item.id}>{item.name}</option>
+                        })
+                    )}
+                </select>
+                </div>
+                <div className="ml-3">
+                    <button onClick={handleAddSubWayToApartment} className="btn btn-success add-subway-btn">+</button>
+                </div>
+            </div>);
+}
 
 export const ApartmentPage = () => {
     const dispatch = useDispatch();
     let { path, url } = useRouteMatch();
     const { data: apartments, error, loading } = useSelector((state) => state.apartments);
+    // const {} = useSelector(state=>state.subways);
     const handleAddApartment = (apartmentsField) => {
         dispatch(createOrderAction(apartmentsField));
     }
@@ -227,6 +362,7 @@ export const ApartmentPage = () => {
                             return (<li className="list-group-item" key={apartment.id}>
                                 <Link to={`${url}/${apartment.id}`}>{apartment.address}</Link></li>)
                         }) : null}
+                        <li className="list-group-item"><Link to='/apartments'>Создать квартиру</Link></li>
                     </ul>
                 </div>
                 <div className="apartment-list-container__item">

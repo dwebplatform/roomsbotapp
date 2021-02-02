@@ -1,5 +1,91 @@
-const { Subway, Apartment } = require('../models');
+const { Subway, Apartment, ApartmentSubway } = require('../models');
 
+const Op = require('sequelize').Op;
+
+
+ 
+
+
+exports.addToApartment = async (req,res)=>{
+    let { addedSubwayId,apartmentId} = req.body;
+    if(typeof addedSubwayId=='undedined' || typeof apartmentId=='undedined'){
+        return res.json({
+            status:'error',
+            msg:'не все поля были переданы'
+        });
+    }
+    try{
+    let apartment = await Apartment.findOne({ where:{
+        id:apartmentId
+    }});
+    let addedSubway = await Subway.findOne({
+        where:{
+            id: addedSubwayId
+        }
+    });
+    if(apartment && addedSubway){
+        await apartment.addSubway(addedSubway);
+        return res.json({status:'ok', msg:'к данной квартире добавлено новое метро'})
+    }
+    } catch(e){
+        return res.json({
+            status:'error',
+            msg:'не удалось получить квартиру с таким id'
+        });
+    }
+    return res.json({
+        status:'ok',
+        msg:'succefully added subway to apartments'
+    });
+}
+
+exports.getSubForApartment = async(req,res)=>{
+    let {apartmentId} = req.params;
+     
+     if(!apartmentId){
+        let allSubways = await Subway.findAll({});
+        return res.json({
+            status:'ok',
+            subways:allSubways
+        });
+     }
+
+    try{
+        let subwaysForCurentApartment = await Subway.findAll({
+            attributes:['id'],
+            include:{
+                model: Apartment,
+                where:{
+                    id:apartmentId
+                }
+            }});
+        let subwaysIdsForCurrentApartment = subwaysForCurentApartment.map(el=>el.id);
+        let allSubways = await Subway.findAll({
+            where: {
+                id:{
+                    [Op.not]:subwaysIdsForCurrentApartment
+                }
+            }
+        });
+        if(!allSubways){
+            return res.json({
+                status:'error',
+                msg:'не было найдено ни одного метро'
+            });
+        }
+
+        return res.json({
+            status:'ok',
+            subways:allSubways
+        });
+    } catch(e){
+
+    }
+    return res.json({
+        status:'ok',
+        msg:'get all for apartment'
+    })
+}
 
 exports.getApartmentsByIds = async (req, res) => {
     let { apartmentIds } = req.body;

@@ -1,5 +1,5 @@
 import { DummyContainer, ServiceUtilContainer } from "../util/serviceUtil";
-import { GET_ORDERS, CREATE_APARTMENT, CREATE_APARTMENT_ERROR, GET_APARTMENTS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS } from "./actions";
+import {DELETE_APARTMENT_BY_ID_SUCCESS, GET_ORDERS, CREATE_APARTMENT,ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR,GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR,GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS,IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS } from "./actions";
 
 
 // тут только одну переменную меняешь
@@ -9,6 +9,11 @@ const initialState = {
     orders: {
         data: [],
         error: false,
+        loading: false
+    },
+    subwaysNotIncludedInApartment:{
+        data:[],
+        error:false,
         loading: false
     },
     apartment: {
@@ -28,6 +33,47 @@ const initialState = {
 const reducer = (state = initialState, action) => {
     const { type, payload } = action;
     switch (type) {
+        
+         case DELETE_APARTMENT_BY_ID_SUCCESS:
+         return {
+            ...state,
+            popupInfo:{
+                deletedApartmentSuccess: true
+            }
+         }
+         case ADD_SUBWAY_TO_APARTMENT_SUCCESS:
+         return {
+            ...state,
+            popupInfo:{
+                subwayAdded:true
+            }
+         }
+         case GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR:
+         return {
+            ...state,
+            subwaysNotIncludedInApartment:{
+                data:[],
+                error:true,
+                loading:false
+            }
+         };
+         case GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS:
+         return {
+            ...state,
+            subwaysNotIncludedInApartment:{
+                data:payload.subways,
+                error: false,
+                loading: false
+            }
+         }
+        case IMAGE_ADD_TO_APARTMENT_SUCESS:
+        return {
+                ...state,
+                popupInfo:{
+                    successfullyAdded: true
+                }
+        };
+
         case DELETE_APARTMENT_IMAGE_SUCCESS:
             return {
                 ...state,

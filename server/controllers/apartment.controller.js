@@ -1,14 +1,155 @@
 
 
-const { Apartment } = require('../models');
+const { Apartment,Subway } = require('../models');
 const paginate = require('express-paginate');
 const rootPath = require('app-root-path');
 const uid = require('uniqid');
 
+const loadAsync = async (file, path) => {
+    file.mv(`${rootPath}/server/public${path}`, (err) => {
+        if (err) {
+            throw new Error('не удалось загрузить данную фотографию');
+        }
+    });
+}
+
+async function getImagesForApartment(imageInstances) {
+    let imagePaths = [];
+    for (let key in imageInstances) {
+        let curPath = '/img/__APARTMENT_UID' + uid();
+        try {
+            await loadAsync(imageInstances[key], curPath);
+            imagePaths.push(curPath);
+        } catch (e) {
+        }
+    }
+    return imagePaths;
+}
 
 
 
+exports.deleteById = async(req,res)=>{
 
+    let {apartmentId} = req.params;
+    if(!apartmentId){
+        return res.json({
+            status:'eror',
+            msg:'не был передан id квартиры'
+        });
+    }
+    try{
+        let findedApartment = await Apartment.findOne({
+            where:{
+                id:apartmentId
+            }
+        });
+        await findedApartment.destroy();
+        return res.json({
+            status:'ok',
+            msg:'квартира была успешно '
+        })
+    }
+    catch(e){
+        return res.json({
+            status:'error'
+        })
+    }
+    return res.json(
+        {status:'ok',
+         msg:'deleted succesfully'});
+}
+
+exports.addImagesToApartment = async (req,res)=>{
+    let {apartmentId} = req.params;
+    if(!req.files){
+        return res.json({
+            status:'error',
+            msg:'не было передано img'
+        });
+    }
+    try{
+    let allAddedImages = await getImagesForApartment(req.files);
+    if(!allAddedImages.length){
+
+        return res.json({
+            status:'error',
+            msg:'не удалось добавить фотографии для текущей квартиры'
+        });
+    }
+    let curApartment = await Apartment.findOne({
+        where:{
+            id: apartmentId
+        }
+    });
+    if(!curApartment){
+        return res.json({
+            status:'error',
+            msg:'не удалось найти квартиры с данным id'
+        });
+    }
+    let finalImages = [...curApartment.images,...allAddedImages];
+    curApartment.images =finalImages;
+    await curApartment.save();
+    return res.json({
+        status:'ok',
+        msg:'успешно добавлены файлы к текущей квартире'
+    });
+    } catch(e){
+        return res.json({
+            status:'error',
+            msg:' не удалось добавить фотографии к текущей квартире'
+        });
+    }
+     
+     
+}
+exports.updateBasicFields = async(req,res)=>{
+    let {apartmentId} = req.params;
+    if(!apartmentId){
+        return res.json({
+            status:'error',
+            msg:'не был передан id квартиры'
+        });
+    } 
+    let {address, roomAmount, price, isVip} = req.body;
+    if(!address||!roomAmount|| !price){
+        return res.json({
+            status:'error',
+            msg:'не все поля были переданы'
+        });
+    }
+    try{
+        let curApartment = await Apartment.findOne({
+            where:{
+                id: apartmentId
+            }
+        });
+        if(!curApartment){
+            return res.json({
+                status:'error',
+                msg: 'не удалось найти  квартиры c таким id'
+            });
+        }
+        curApartment.address = address;
+        curApartment.roomAmount = roomAmount;
+        curApartment.price = price;
+        curApartment.isVip = (isVip =="1")? true: false;
+        await curApartment.save();
+        return res.json({
+            status:'ok',
+            msg:'успешно изменены данные по квартире'
+        });
+    } catch(e){
+        return res.json({
+            status:'error',
+            msg:'не удалось обновить данные квартиры'
+        })
+    }
+    return res.json({
+        status:'ok',
+        msg:'basic field updated'
+    });
+}
 
 
 
@@ -67,35 +208,20 @@ exports.deleteImageByIndex = async (req, res) => {
 
 
 
-const loadAsync = async (file, path) => {
-    file.mv(`${rootPath}/server/public${path}`, (err) => {
-        if (err) {
-            throw new Error('не удалось загрузить данную фотографию');
-        }
-    });
-}
-
-async function getImagesForApartment(imageInstances) {
-    let imagePaths = [];
-    for (let key in imageInstances) {
-        let curPath = '/img/__APARTMENT_UID' + uid();
-        try {
-            await loadAsync(imageInstances[key], curPath);
-            imagePaths.push(curPath);
-        } catch (e) {
-        }
-    }
-    return imagePaths;
-}
+ 
 
 
 exports.getApartmentById = async (req, res) => {
     let { apartmentId } = req.params;
     try {
         let curApartment = await Apartment.findOne({
+            include:{
+                model: Subway
+            },
             where: {
                 id: apartmentId
             },
+
             //TODO: включить  метро
         });
         if (!curApartment) {
@@ -114,10 +240,7 @@ exports.getApartmentById = async (req, res) => {
             msg: 'не удалось найти комнаты с данным id'
         });
     }
-    return res.json({
-        status: 'ok',
-        msg: 'Now you get the result'
-    })
+     
 }
 
 exports.createApartment = async (req, res) => {
@@ -138,8 +261,6 @@ exports.createApartment = async (req, res) => {
             msg: 'no msg given'
         });
     }
-
-
 
     let allPaths = await getImagesForApartment(req.files);
     // create apartment

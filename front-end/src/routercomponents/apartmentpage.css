@@ -30,6 +30,13 @@
 .current-apartment-container__field-label{
     margin:  4px;
 }
+.img-thumbnail.apartment-image{
+    width: 100%;
+    height: 300px ;
+ }
+.image-item{
+    width: 300px;
+}
 .pointer{
     cursor: pointer;
 }
@@ -43,4 +50,37 @@
 }
 .delete-image-btn{
     cursor: pointer;
+}
+.edit-apartmentcontainer__item--added-image{
+    display: flex;
+}
+
+.preloaded-image-container{
+    display: flex;
+}
+.preloaded-image-container__item{
+    margin: 5px;
+    width: 200px;
+
+    position: relative;
+}
+.preloaded-image-container__item:before{
+    content: 'New';
+    width: 30px;
+    height: 30px;
+    left: 90%;
+    top:-10px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    position: absolute;
+    background-color: green;
+
+}
+
+.add-subway-btn{
+    font-weight: bold;
 }

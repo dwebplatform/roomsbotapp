@@ -8,10 +8,86 @@ export const CREATE_APARTMENT = "CREATE_APARTMENT";
 export const CREATE_APARTMENT_ERROR = "CREATE_APARTMENT_ERROR";
 export const GET_ALL_APARTMENT_ERROR = "GET_ALL_APARTMENT_ERROR";
 
+export const IMAGE_ADD_TO_APARTMENT_SUCESS ="IMAGE_ADD_TO_APARTMENT_SUCESS";
+export const IMAGE_ADD_TO_APARTMENT_FAIL ="IMAGE_ADD_TO_APARTMENT_FAIL";
+
 export const DELETE_APARTMENT_IMAGE_SUCCESS = "DELETE_APARTMENT_IMAGE_SUCCESS";
 export const DELETE_APARTMENT_IMAGE_ERROR = "DELETE_APARTMENT_IMAGE_ERROR";
+export const GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS="GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS";
+export const GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR ="GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR";
+
+export const ADD_SUBWAY_TO_APARTMENT_SUCCESS ="ADD_SUBWAY_TO_APARTMENT_SUCCESS";
+export const ADD_SUBWAY_TO_APARTMENT_ERROR ="ADD_SUBWAY_TO_APARTMENT_ERROR";
+
+export const DELETE_APARTMENT_BY_ID_SUCCESS ="DELETE_APARTMENT_BY_ID_SUCCESS";
+export const DELETE_APARTMENT_BY_ID_ERROR="DELETE_APARTMENT_BY_ID_ERROR";
+export const deleteApartmentByIdAction=(apartmentId)=>async(dispatch, getState)=>{
+        let {data} = await getState().serviceUtilContainer.deleteApartmentById(apartmentId);
+        console.log(data);
+        if(data.status=='ok'){
+            dispatch({
+                type:DELETE_APARTMENT_BY_ID_SUCCESS
+            });
+        } else {
+            dispatch({type:DELETE_APARTMENT_BY_ID_ERROR});
+        }
 
 
+}
+export const addSubwayForApartmentAction=(addedSubwayId,apartmentId)=> async(dispatch, getState)=>{
+    let {data} = await getState().serviceUtilContainer.addSubwayForApartment(addedSubwayId,apartmentId);
+    if(data.status =='ok'){
+        dispatch({
+            type:ADD_SUBWAY_TO_APARTMENT_SUCCESS,
+
+        })
+    }else{
+        dispatch({
+            type:ADD_SUBWAY_TO_APARTMENT_ERROR
+        })
+    }
+}
+
+export const getAllSubWaysAction =(apartmentId)=>async(dispatch, getState)=>{
+    let { data } = await getState().serviceUtilContainer.getAllSubway(apartmentId);
+     if(data.status=='ok'){
+        dispatch({
+            type:GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS,
+            payload: {
+                subways:data.subways,
+                error:false,
+                loading: false
+            }
+        });
+    } else {
+        dispatch({
+            type:GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR,
+            payload: {
+                subways:[],
+                error: true,
+                loading: false
+            }
+        });
+    }
+}
+export const addNewImageToApartmentAction =(apartmentId, imageFileArray)=>async(dispatch, getState)=>{
+    let {data} = await getState().serviceUtilContainer.addNewImageToApartment(apartmentId, imageFileArray);
+    console.log(data);
+    if(data.status=='ok'){
+        dispatch({
+            type:IMAGE_ADD_TO_APARTMENT_SUCESS,
+        });
+    } else {
+        dispatch({
+            type:IMAGE_ADD_TO_APARTMENT_FAIL,
+        });
+    }
+}
+export const updateBasicApartmentFieldsAction =(apartmentId,fields)=>async(dispatch, getState)=>{
+    let {data} = await getState().serviceUtilContainer.updateApartmentById(apartmentId, fields);
+    console.log({data});
+
+};
 
 export const deleteApartmentImageByIndexAction = (apartmentId, imageIndex) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.deleteApartmentImageByIndex(apartmentId, imageIndex);

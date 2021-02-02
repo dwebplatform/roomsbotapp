@@ -13,6 +13,8 @@ module.exports = (app) => { // роуты для тренеров
     router.get('/rooms-amount/:subwayId', apartmentSubwayController.AmountOfRoomsWithApartmentIdsBySubwayId);
     router.get('/allsubway', apartmentSubwayController.allSubway);
     router.get('/allsubway/:id', apartmentSubwayController.getSubById);
-
+    router.get('/allsubway-for-apartment/:apartmentId', apartmentSubwayController.getSubForApartment);
+   
+    router.post('/add-to-apartment',apartmentSubwayController.addToApartment);
     app.use('/api/apartments-subway', router);
 };
