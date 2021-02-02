@@ -1,5 +1,5 @@
 import { DummyContainer, ServiceUtilContainer } from "../util/serviceUtil";
-import {DELETE_APARTMENT_BY_ID_SUCCESS, GET_ORDERS, CREATE_APARTMENT,ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR,GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR,GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS,IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS } from "./actions";
+import {DELETE_APARTMENT_BY_ID_SUCCESS,REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS, GET_ORDERS, CREATE_APARTMENT,ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR,GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR,GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS,IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS } from "./actions";
 
 
 // тут только одну переменную меняешь
@@ -33,7 +33,13 @@ const initialState = {
 const reducer = (state = initialState, action) => {
     const { type, payload } = action;
     switch (type) {
-        
+         case REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS:
+         return {
+            ...state,
+            popupInfo:{
+                removeSubWayFromApartmentSuccess: true
+            }
+         }
          case DELETE_APARTMENT_BY_ID_SUCCESS:
          return {
             ...state,

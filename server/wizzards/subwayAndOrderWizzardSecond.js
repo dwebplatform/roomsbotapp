@@ -3,10 +3,22 @@ require('dotenv').config();
 const { Scenes, Markup } = require('telegraf');
 const { default: axios } = require('axios');
 let DOMAIN_ROOT = process.env.DOMAIN_ROOT;
+const fs = require('fs');
 const { ApartmentApi } = require('../apiinterfaces/ApartmentApi');
 const superBotHelper = require('../botHelpers/superBotHelpers');
 // const superBotHelper = require('../botHelpers/superBotHelpers');
 const apartmentApiInstance = new ApartmentApi();
+
+
+function showApartmentsWithPhoto(ctx, inlineKeyBoard) {
+    inlineKeyBoard.map(async (btn, i) => {
+        await ctx.replyWithPhoto({
+            url: DOMAIN_ROOT + '/img/__APARTMENT_UID__r0kxy2f8gkknwuxbe.jpeg'
+        });
+        await ctx.reply('->', Markup.inlineKeyboard([btn]));
+    });
+
+}
 /** 
  * ! вот такой интерфейс должен иметь пришедший объект
  * !interface IroomsAmountAndIds {
@@ -30,7 +42,7 @@ function createApartmentButtonWithCertainAmountOfRooms(apartments) {
             return [{
                 text: room.address, callback_data: JSON.stringify({
                     type: 'create_order',
-                    value: room.id
+                    value: room.id,
                 })
             }];
         });
@@ -106,16 +118,38 @@ async function chooseSubwayButtonHandler(ctx, data) {
     } else {
         superBotHelper.deleteBotMessages(ctx);
         superBotHelper.startCommands.subwayStart(ctx);
-        ctx.reply('Для данного метро нет ни одной квартиры просим прощения ');
+        let info = await ctx.reply('Для данного метро нет ни одной квартиры просим прощения ');
+        superBotHelper.saveBotMessageIdForDeleted(ctx, info.message_id);
     }
 }
 
 function showApartmentsMessage(ctx, data) {
     console.log({ data: data })
     let { apartments } = data;
+    //
+    const imageContainer = {
+
+    };
+    for (let ap of apartments) {
+        if (ap.images && ap.images.length) {
+            imageContainer[ap.id] = ap.images[0];
+        }
+    }
     let inlineKeyBoard = createApartmentButtonWithCertainAmountOfRooms(apartments);
+    inlineKeyBoard.map(async (btn, i) => {
+        let btnInfo = btn[0];
+        let curApartmentId = JSON.parse(btnInfo.callback_data).value;
+        let imageInfo = (curApartmentId in imageContainer) ? imageContainer[curApartmentId] : '/default/missy_kitty.jpg';
+        await ctx.replyWithPhoto({
+            url: DOMAIN_ROOT + imageInfo
+        }, Markup.inlineKeyboard([btn]));
+        // await ctx.reply('->', Markup.inlineKeyboard([btn]));
+    });
     ctx.scene.leave();
-    ctx.reply('Вы выбрали квартиры с определенным кол-вом комнат', Markup.inlineKeyboard(inlineKeyBoard));
+
+
+    // раскоментировать!!!
+    // ctx.reply('Вы выбрали квартиры с определенным кол-вом комнат', Markup.inlineKeyboard(inlineKeyBoard));
 }
 
 module.exports = {

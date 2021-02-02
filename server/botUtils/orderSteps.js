@@ -1,5 +1,3 @@
-
-
 /**
  *  {
     Вот такой должен быть сформирован объект
@@ -22,7 +20,6 @@
     }
  }
  */
-
 const orderSteps = {
     1: (bot, msg, store, apartmentId) => {
         // Введите время заезда: пример 20.12.2020
@@ -32,12 +29,10 @@ const orderSteps = {
         //     fromDate: '',
         // }
         bot.sendMessage(msg.chat.id, ' первый шаг');
-
     },
     2: (bot, msg, store, apartmentId) => {
         // введите дату выезда: пример 22.12.2020
         bot.sendMessage(msg.chat.id, ' второй шаг');
-
     },
     3: (bot, msg, store, apartmentId) => {
         bot.sendMessage(msg.chat.id, ' третий шаг');

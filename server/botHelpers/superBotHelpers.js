@@ -38,6 +38,9 @@ function createSubwayButtons(allSubways) {
                 });
             }
         });
+        if (subArray.length) {
+            initialArray.push(subArray);
+        }
         return initialArray;
     } catch (e) {
         return [];

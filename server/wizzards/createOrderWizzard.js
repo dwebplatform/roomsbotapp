@@ -112,7 +112,7 @@ const createOrderWizzardScene = new WizardScene(
             let { data } = await axios.post(DOMAIN_ROOT + '/api/order/create', orderData);
             if (data && data.status == 'ok') {
                 console.log(data)
-                await ctx.reply('Отлично вот результат');
+                await ctx.reply('Наш менеджер скоро с вами свяжется');
             } else {
                 await ctx.reply('Произошла ошибка на сервере');
             }

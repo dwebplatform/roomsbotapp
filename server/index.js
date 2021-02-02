@@ -156,8 +156,13 @@ const superBotHelper = require('./botHelpers/superBotHelpers');
 // bot.start(choseApartmentBotButtons);
 // bot.start(superBotHelper.startCommands.subwayStart);
 
+
+
 bot.start((ctx) => {
     // superBotHelper.startCommands.subwayStart(ctx);
+
+
+    //начинаем выбор метро разкоментировать
     ctx.reply("Добро пожаловать в бот поиск квартиры здесь вы можете найти квартиру на любой вкус", Markup.inlineKeyboard([{
         text: 'Начать',
         callback_data: JSON.stringify({
@@ -234,6 +239,7 @@ bot.launch();
 require('./routes/main.routes')(app);
 require('./routes/apartment-subway.routes')(app);
 require('./routes/apartment.routes')(app);
+require('./routes/subway.routes')(app);
 (async () => {
 
 })()

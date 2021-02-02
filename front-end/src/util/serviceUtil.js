@@ -4,34 +4,46 @@ export class ServiceUtilContainer {
     constructor() {
     }
 
-    async deleteApartmentById(apartmentId){
+
+    async removeSubWayFromApartment(apartmentId,subwayId){
+        let response = await axios.post(`/api/apartments/${apartmentId}/remove-subway/${subwayId}`);
+        return response;
+    }
+    /*
+    * 
+    route("/api/subway/all)" */
+    async getAllSubWays() {
+        let response = await axios.get('/api/subway/all');
+        return response;
+    }
+    async deleteApartmentById(apartmentId) {
         let response = await axios.post(`/api/apartments/delete/${apartmentId}`);
         return response;
     }
-    async addSubwayForApartment(addedSubwayId,apartmentId){
-        let response = await axios.post('/api/apartments-subway/add-to-apartment',{
-            addedSubwayId,apartmentId
+    async addSubwayForApartment(addedSubwayId, apartmentId) {
+        let response = await axios.post('/api/apartments-subway/add-to-apartment', {
+            addedSubwayId, apartmentId
         });
         return response;
     }
-    async getAllSubway(apartmentId = null){
-        let url ='/api/apartments-subway/allsubway-for-apartment/';
-        if(typeof apartmentId!=='null'){
-            url+=apartmentId;
+    async getAllSubway(apartmentId = null) {
+        let url = '/api/apartments-subway/allsubway-for-apartment/';
+        if (typeof apartmentId !== 'null') {
+            url += apartmentId;
         }
         let response = axios.get(url);
         return response;
     }
-    async addNewImageToApartment(apartmentId, imageFilesArray){
+    async addNewImageToApartment(apartmentId, imageFilesArray) {
         let formData = new FormData();
-            imageFilesArray.forEach((file, index)=>{
-                formData.append(`apartment_added_image_${index}`,file);
+        imageFilesArray.forEach((file, index) => {
+            formData.append(`apartment_added_image_${index}`, file);
         });
-        let response = await axios.post(`/api/apartments/add-images/${apartmentId}`,formData);
+        let response = await axios.post(`/api/apartments/add-images/${apartmentId}`, formData);
         return response;
     }
-    async updateApartmentById(apartmentId, fields){
-        let response = await axios.post(`/api/apartments/update-basic-fields/${apartmentId}`,fields);
+    async updateApartmentById(apartmentId, fields) {
+        let response = await axios.post(`/api/apartments/update-basic-fields/${apartmentId}`, fields);
         return response;
     }
     async deleteApartmentImageByIndex(apartmentId, imageIndex) {

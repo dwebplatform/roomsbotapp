@@ -6,7 +6,10 @@
 .apartment-list-container{
     flex:1;
 }
-
+.subway-item{
+    text-transform: uppercase;
+    color: #1E90FF;
+}
 .current-apartment-container{
     flex:4;
     padding: 2rem;
@@ -83,4 +86,16 @@
 
 .add-subway-btn{
     font-weight: bold;
+}
+
+.subway-item{
+    position: relative;
+}
+.subway-item-icon{
+    top:-10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    left: 80%;
+    color: #dc3545;
+    position: absolute;
 }

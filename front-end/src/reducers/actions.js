@@ -21,12 +21,31 @@ export const ADD_SUBWAY_TO_APARTMENT_ERROR ="ADD_SUBWAY_TO_APARTMENT_ERROR";
 
 export const DELETE_APARTMENT_BY_ID_SUCCESS ="DELETE_APARTMENT_BY_ID_SUCCESS";
 export const DELETE_APARTMENT_BY_ID_ERROR="DELETE_APARTMENT_BY_ID_ERROR";
+
+export const REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS="REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS";
+export const REMOVE_SUBWAY_FROM_APARTMENT_ERROR="REMOVE_SUBWAY_FROM_APARTMENT_ERROR";
+
+ 
+ export const removeSubWayFromApartmentAction=(apartmentId,subwayId)=>async(dispatch, getState)=>{
+    let {data} = await getState().serviceUtilContainer.removeSubWayFromApartment(apartmentId,subwayId);
+     
+    if(data.status === 'ok'){
+        dispatch({
+            type:REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS,
+        });
+    } else {
+         dispatch({
+            type:REMOVE_SUBWAY_FROM_APARTMENT_ERROR
+        });
+    }
+ }
+
 export const deleteApartmentByIdAction=(apartmentId)=>async(dispatch, getState)=>{
-        let {data} = await getState().serviceUtilContainer.deleteApartmentById(apartmentId);
+        let { data } = await getState().serviceUtilContainer.deleteApartmentById(apartmentId);
         console.log(data);
         if(data.status=='ok'){
             dispatch({
-                type:DELETE_APARTMENT_BY_ID_SUCCESS
+                type: DELETE_APARTMENT_BY_ID_SUCCESS
             });
         } else {
             dispatch({type:DELETE_APARTMENT_BY_ID_ERROR});
@@ -35,7 +54,7 @@ export const deleteApartmentByIdAction=(apartmentId)=>async(dispatch, getState)=
 
 }
 export const addSubwayForApartmentAction=(addedSubwayId,apartmentId)=> async(dispatch, getState)=>{
-    let {data} = await getState().serviceUtilContainer.addSubwayForApartment(addedSubwayId,apartmentId);
+    let { data } = await getState().serviceUtilContainer.addSubwayForApartment(addedSubwayId,apartmentId);
     if(data.status =='ok'){
         dispatch({
             type:ADD_SUBWAY_TO_APARTMENT_SUCCESS,

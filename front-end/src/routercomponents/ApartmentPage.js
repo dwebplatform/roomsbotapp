@@ -3,12 +3,12 @@ import axios from 'axios';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {useField} from 'react-hooks-lib';
-
+import {BsXCircle} from 'react-icons/bs';
 import './apartmentpage.css';
 import {objectHasProps} from '../util/helpers';
 
 
-import { createOrderAction,deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
+import { createOrderAction, removeSubWayFromApartmentAction, deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
 import { BrowserRouter,Redirect, Link, Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 
 
@@ -45,7 +45,7 @@ const EditApartment = () => {
     }, [apartmentId]);
 
     const { data: apartment, error, loading } = useSelector((state) => state.apartment);
-    const { apartmentImageDeleted, successfullyAdded , deletedApartmentSuccess} = useSelector((state) => state.popupInfo);
+    const { apartmentImageDeleted, removeSubWayFromApartmentSuccess, successfullyAdded , deletedApartmentSuccess} = useSelector((state) => state.popupInfo);
     const [editFields, setEditFields] = useApartmentUpdate(apartmentId,apartment);
     
     const handleBasicFieldsChange = (e) => {
@@ -70,6 +70,9 @@ const EditApartment = () => {
                 return [...prevState, e.target.files[0]];
             });
         }
+    }
+    if(removeSubWayFromApartmentSuccess){ // при успешном удалении перезагрузить
+        document.location.reload();
     }
     if(successfullyAdded){// после добавления изображений
         document.location.reload();
@@ -96,6 +99,9 @@ const EditApartment = () => {
     }
     const handleDeleteApartment=()=>{
         dispatch(deleteApartmentByIdAction(apartmentId));
+    }
+    const handleDeleteSubWayFromApartment=(subwayId)=>{
+        dispatch(removeSubWayFromApartmentAction(apartmentId,subwayId));
     }
     return (
         <div className="edit-apartment-container">
@@ -152,8 +158,16 @@ const EditApartment = () => {
                     <option value="0">Эконом</option>
                 </select>
             </div>
-            <div className="all-subway-for-apartment-container">
+            <div className="all-subway-for-apartment-container d-flex">
                 
+                { (editFields.subways && editFields.subways.length) ?
+                    editFields.subways.map((subWayItem)=>{
+                        return <span className="badge badge-light p-3 m-2 subway-item" key={subWayItem.id}>
+                        {subWayItem.name}
+                        <BsXCircle onClick={()=>handleDeleteSubWayFromApartment(subWayItem.id)} className="subway-item-icon"/>
+                        </span>
+                    }) : null
+                }
             </div>
              <EditSubWayInput  apartmentId={apartmentId}/>
             <div className="edit-apartmentcontainer__item">

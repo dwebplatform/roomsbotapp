@@ -10,6 +10,7 @@ import { BrowserRouter as Router, Link, Route, Switch, useParams, useRouteMatch 
 import { Header } from './routercomponents/Header';
 import { OrderPage } from './routercomponents/OrderPage';
 import { ApartmentPage } from './routercomponents/ApartmentPage';
+import { SubWayPage } from './routercomponents/SubWayPage';
 
 //TODO : LOGIN PAGE
 function App() {
@@ -22,6 +23,9 @@ function App() {
         </Route>
         <Route path='/apartments'>
           <ApartmentPage />
+        </Route>
+        <Route path='/subways'>
+          <SubWayPage />
         </Route>
       </Switch>
     </>
