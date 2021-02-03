@@ -1,5 +1,5 @@
 import { DummyContainer, ServiceUtilContainer } from "../util/serviceUtil";
-import { DELETE_SUBWAY_BY_ID_SUCCESS, DELETE_SUBWAY_BY_ID_ERROR,IMAGE_ADD_TO_APARTMENT_FAIL, REMOVE_SUBWAY_FROM_APARTMENT_ERROR, ADD_SUBWAY_TO_APARTMENT_ERROR, ADD_SERVICE_TO_APARTMENT_ERROR, UPDATE_SERVICE_NAME_ERROR, UPDATE_SERVICE_NAME_SUCCESS, ADD_SERVICE_TO_APARTMENT_SUCCESS, GET_ALL_SERVICES_SUCCESS, GET_ALL_SERVICES_ERROR, REMOVE_SERVICE_FROM_APARTMENT_SUCCESS, REMOVE_SERVICE_FROM_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_SUCCESS, DELETE_APARTMENT_BY_ID_SUCCESS, REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS, GET_ORDERS, CREATE_APARTMENT, ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS, IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS, ADD_SUBWAY_ERROR, ADD_SUBWAY_SUCCESS, UPDATE_BASIC_FIELDS_SUCCESS, DELETE_APARTMENT_BY_ID_ERROR } from "./actions";
+import { DELETE_SUBWAY_BY_ID_SUCCESS, DELETE_SUBWAY_BY_ID_ERROR, IMAGE_ADD_TO_APARTMENT_FAIL, REMOVE_SUBWAY_FROM_APARTMENT_ERROR, ADD_SUBWAY_TO_APARTMENT_ERROR, ADD_SERVICE_TO_APARTMENT_ERROR, UPDATE_SERVICE_NAME_ERROR, UPDATE_SERVICE_NAME_SUCCESS, ADD_SERVICE_TO_APARTMENT_SUCCESS, GET_ALL_SERVICES_SUCCESS, GET_ALL_SERVICES_ERROR, REMOVE_SERVICE_FROM_APARTMENT_SUCCESS, REMOVE_SERVICE_FROM_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_SUCCESS, DELETE_APARTMENT_BY_ID_SUCCESS, REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS, GET_ORDERS, CREATE_APARTMENT, ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS, IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS, ADD_SUBWAY_ERROR, ADD_SUBWAY_SUCCESS, UPDATE_BASIC_FIELDS_SUCCESS, DELETE_APARTMENT_BY_ID_ERROR, CLEAR_ORDER_EVENT, ADD_NEW_SERVICE_ERROR, ADD_NEW_SERVICE_SUCCESS } from "./actions";
 import { immitateDeletionServiceFromApartment, immitateAddServiceToApartment } from "./redux-helpers";
 
 
@@ -28,7 +28,7 @@ const initialState = {
         error: false,
         loading: false
     },
-    
+
     apartments: {
         data: [],
         error: false,
@@ -46,20 +46,44 @@ const initialState = {
 const reducer = (state = initialState, action) => {
     const { type, payload } = action;
     switch (type) {
+        case ADD_NEW_SERVICE_SUCCESS:
 
-        case DELETE_SUBWAY_BY_ID_SUCCESS:
-        
-        return {
-            ...state,
-             subwaysNotIncludedInApartment: {
-                    ...state.subwaysNotIncludedInApartment,
-                        data: payload.subways,
+            return {
+                ...state,
+
+                popupInfo: {
+                    addNewServiceSuccess: {
+                        msg: 'успешно создана новая услуга'
+                    }
                 }
-        }
+            }
+        case ADD_NEW_SERVICE_ERROR:
+            return {
+                ...state,
+                popupInfo: {
+                    addNewServiceError: {
+                        msg: 'не удалось создать новую услугу'
+                    }
+                }
+            }
+        case CLEAR_ORDER_EVENT:
+            return {
+                ...state,
+                popupInfo: {}
+            }
+        case DELETE_SUBWAY_BY_ID_SUCCESS:
+
+            return {
+                ...state,
+                subwaysNotIncludedInApartment: {
+                    ...state.subwaysNotIncludedInApartment,
+                    data: payload.subways,
+                }
+            }
         case DELETE_SUBWAY_BY_ID_ERROR:
-        return {
-            ...state,
-        }
+            return {
+                ...state,
+            }
         case UPDATE_SERVICE_NAME_ERROR:
             return {
                 ...state,
@@ -308,6 +332,9 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 popupInfo: {
+                    createOrderEvent: {
+                        msg: 'Заказ был создан успешно'
+                    },
                     ...payload
                 }
             }

@@ -4,6 +4,7 @@ require('dotenv').config();
 const DOMAIN_ROOT = process.env.DOMAIN_ROOT;
 const axios = require('axios');
 
+
 class ApartmentApi {
 
 

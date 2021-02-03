@@ -8,7 +8,7 @@ import './apartmentpage.css';
 import { objectHasProps } from '../util/helpers';
 
 
-import { addServiceToApartmentAction, getAllServiceAction, createOrderAction, deleteServiceFromApartmentAction, getServicesForApartmentAction, removeSubWayFromApartmentAction, deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
+import { addServiceToApartmentAction, clearOrderEventAction, getAllServiceAction, createOrderAction, deleteServiceFromApartmentAction, getServicesForApartmentAction, removeSubWayFromApartmentAction, deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
 import { BrowserRouter, Redirect, Link, Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 
 
@@ -200,6 +200,7 @@ const EditApartment = () => {
 
 
 const AddApartment = ({ handleAddApartmentListener }) => {
+    const dispatch = useDispatch();
     const [apartmentFields, setApartmentFields] = useState({
         address: '',
         isVip: 0,
@@ -268,8 +269,14 @@ const AddApartment = ({ handleAddApartmentListener }) => {
         let copyApatrmentsFields = { ...apartmentFields };
         handleAddApartmentListener(copyApatrmentsFields);
     }
-
+    const { createOrderEvent } = useSelector((state) => state.popupInfo);
+    useEffect(() => {
+        if (createOrderEvent) {
+            dispatch(clearOrderEventAction());
+        }
+    }, []);
     return (<>  <div className="current-apartment-container__item">
+        {createOrderEvent && <div className="alert alert-success">{createOrderEvent.msg}</div>}
         <div className="current-apartment-container__field">
             <label className="current-apartment-container__field-label">Адрес:</label>
             <input className="curretn-apartment-container__field-input form-control" type="text"
@@ -333,14 +340,12 @@ const EditServiceInput = ({ apartmentId }) => {
         dispatch(getServicesForApartmentAction(apartmentId));
     }, [apartmentId]);
     const handleAddServiceToApartment = () => {
-           if(!(selectedServiceId=='null')){
-                dispatch(addServiceToApartmentAction(apartmentId, selectedServiceId));
-           }
-
+        if (!(selectedServiceId == 'null')) {
+            dispatch(addServiceToApartmentAction(apartmentId, selectedServiceId));
+        }
     }
     const handleDeleteServiceFromApartment = (apartmentId, serviceId) => {
-
-            dispatch(deleteServiceFromApartmentAction(apartmentId, serviceId));
+        dispatch(deleteServiceFromApartmentAction(apartmentId, serviceId));
     }
     return (<div className="edit-apartmentcontainer__item d-flex">
         <div className="apartment-service-container">
@@ -361,22 +366,20 @@ const EditServiceInput = ({ apartmentId }) => {
                     if (curServicesIds.includes(serviceInstance.id)) {
                         return null;
                     }
-                    return <option
+                    return (<option
                         key={serviceInstance.id}
-
                         value={serviceInstance.id}
-                    >{serviceInstance.name}</option>
+                    >{serviceInstance.name}</option>)
                 })}
             </select>
         </div>
         <div className="ml-3">
-            <button disabled={selectedServiceId=='null'} onClick={handleAddServiceToApartment} className="btn btn-success add-subway-btn">+</button>
+            <button disabled={selectedServiceId == 'null'} onClick={handleAddServiceToApartment} className="btn btn-success add-subway-btn">+</button>
         </div>
     </div>);
 }
 
 const EditSubWayInput = ({ apartmentId }) => {
-
     const dispatch = useDispatch();
     const { data: subways, error, loading } = useSelector(state => state.subwaysNotIncludedInApartment);
     const popupInfo = useSelector(state => state.popupInfo);
@@ -385,7 +388,6 @@ const EditSubWayInput = ({ apartmentId }) => {
     }, [apartmentId]);
 
     const { value: addedSubway, bind } = useField('null');
-
     if (popupInfo.subwayAdded) {// если успешно добавлено метро
         document.location.reload();
     }
@@ -417,7 +419,6 @@ export const ApartmentPage = () => {
     const dispatch = useDispatch();
     let { path, url } = useRouteMatch();
     const { data: apartments, error, loading } = useSelector((state) => state.apartments);
-    // const {} = useSelector(state=>state.subways);
     const handleAddApartment = (apartmentsField) => {
         dispatch(createOrderAction(apartmentsField));
     }

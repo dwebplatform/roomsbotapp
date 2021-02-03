@@ -45,29 +45,62 @@ export const UPDATE_SERVICE_NAME_ERROR = "UPDATE_SERVICE_NAME_ERROR";
 
 export const UPDATE_BASIC_FIELDS_SUCCESS = "UPDATE_BASIC_FIELDS_SUCCESS";
 
-export const DELETE_SUBWAY_BY_ID_SUCCESS ="DELETE_SUBWAY_BY_ID_SUCCESS";
-export const DELETE_SUBWAY_BY_ID_ERROR ="DELETE_SUBWAY_BY_ID_ERROR";
+export const DELETE_SUBWAY_BY_ID_SUCCESS = "DELETE_SUBWAY_BY_ID_SUCCESS";
+export const DELETE_SUBWAY_BY_ID_ERROR = "DELETE_SUBWAY_BY_ID_ERROR";
 
+export const CLEAR_ORDER_EVENT = "CLEAR_ORDER_EVENT";
 
+export const ADD_NEW_SERVICE_SUCCESS = "ADD_NEW_SERVICE_SUCCESS";
+export const ADD_NEW_SERVICE_ERROR = "ADD_NEW_SERVICE_ERROR";
 
-export const handleDeleteSubWayAction=(subwayId)=>async (dispatch, getState)=>{
-    let { data } = await getState().serviceUtilContainer.deleteSubWayById(subwayId);
-    console.log(data)
-    if(data.status=='ok'){
+export const DELETE_SERVICE_SUCCESS = "DELETE_SERVICE_SUCCESS";
+export const DELETE_SERVICE_ERROR = "DELETE_SERVICE_ERROR";
+
+export const deleteServiceAction = (serviceId) => async (dispatch, getState) => {
+    let { data } = await getState().serviceUtilContainer.deleteService(serviceId);
+    if (data.status == 'ok') {
         dispatch({
+            type: DELETE_SERVICE_SUCCESS
+        })
+    } else {
+        dispatch({
+            type: DELETE_SERVICE_ERROR
+        });
 
-            type:DELETE_SUBWAY_BY_ID_SUCCESS,
-            payload:{
-                subways:data.subways
+    }
+};
+export const addServiceAction = (serviceName) => async (dispatch, getState) => {
+    let { data } = await getState().serviceUtilContainer.addService(serviceName);
+    if (data.status == "ok") {
+        dispatch({
+            type: ADD_NEW_SERVICE_SUCCESS,
+            payload: {
             }
         });
     } else {
         dispatch({
-            type:DELETE_SUBWAY_BY_ID_ERROR
+            type: ADD_NEW_SERVICE_ERROR,
+
         });
-        
     }
-    
+}
+export const handleDeleteSubWayAction = (subwayId) => async (dispatch, getState) => {
+    let { data } = await getState().serviceUtilContainer.deleteSubWayById(subwayId);
+    if (data.status == 'ok') {
+        dispatch({
+
+            type: DELETE_SUBWAY_BY_ID_SUCCESS,
+            payload: {
+                subways: data.subways
+            }
+        });
+    } else {
+        dispatch({
+            type: DELETE_SUBWAY_BY_ID_ERROR
+        });
+
+    }
+
 }
 export const updateServiceNameAction = (serviceId, newServiceName) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.updateServiceName(serviceId, newServiceName);
@@ -309,10 +342,20 @@ export const getApartmentByIdAction = (apartmentId) => async (dispatch, getState
     }
 
 }
+
+export const clearOrderEventAction = () => async (dispatch, getState) => {
+    dispatch({
+        type: CLEAR_ORDER_EVENT
+    });
+}
 export const createOrderAction = (formDataObject) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.createApartment(formDataObject);
-    if (data.status == 'ok') {
-        dispatch({ type: CREATE_APARTMENT, payload: data });
+    if (data.status === 'ok') {
+        dispatch({
+            type: CREATE_APARTMENT, payload: {
+                ...data,
+            }
+        });
     } else {
         dispatch({ type: CREATE_APARTMENT_ERROR })
     }
