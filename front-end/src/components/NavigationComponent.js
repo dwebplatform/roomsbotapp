@@ -24,6 +24,10 @@ export const NavigationComponent = () => {
                 <li className="nav-item">
                     <Link className="nav-link" to="/subways">Метро</Link>
                 </li>
+                 
+                <li className="nav-item">
+                    <Link className="nav-link" to="/services">Услуги</Link>
+                </li>
             </ul>
         </div>
     </nav>)

@@ -5,3 +5,18 @@ export function immitateDeletionServiceFromApartment(servicesForCurrentApartment
     });
     return servicesForCurrentApartment;
 }
+
+export function immitateAddServiceToApartment(data,service){
+	let copy =  [...data];
+	let isServiceAlreadyThere = false;
+            copy.forEach((item)=>{
+                if(item.id ==service.id){
+                        isServiceAlreadyThere = true;
+                }
+			});
+	if(!isServiceAlreadyThere){
+		copy = [...copy, service];
+    }
+    return copy;
+
+}

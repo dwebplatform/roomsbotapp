@@ -134,14 +134,15 @@ exports.addServiceToApartment = async(req,res)=>{
 		let curApartment = await Apartment.findOne({where:{
 			id:apartmentId
 		}});
-		let curService = await Service.findOne({
+		let addedService = await Service.findOne({
 			where:{
 				id:selectedServiceId
 			}
 		});
-		curApartment.addService(curService);
+		curApartment.addService(addedService);
 		return res.json({
 			status:'ok',
+			service:addedService,
 			msg:'услуга добавлена к текущей квартире'
 		});
 	} catch(e){
@@ -152,3 +153,33 @@ exports.addServiceToApartment = async(req,res)=>{
 	}
 }
 
+
+exports.updateServiceName = async(req,res)=>{
+	let {serviceId, newServiceName} = req.body;
+	if(!serviceId||!newServiceName){
+		return res.json({
+			status:'error',
+			msg:'не все поля были переданы'
+		});
+	}
+	try{
+	 let findedService = await Service.findOne({
+	 	where:{
+	 		id:serviceId
+	 	}
+	 });
+	findedService.name = newServiceName;
+	await findedService.save();
+	let allServices = await Service.findAll({});
+	return res.json({
+		status:'ok',
+		msg:'updated succefully',
+		services: allServices
+	});
+	} catch(e){
+		return res.json({
+			status:'error',
+			msg:'не удалось обновить данной услуги'
+		})
+	} 
+}

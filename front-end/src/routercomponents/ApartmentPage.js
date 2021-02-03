@@ -325,7 +325,7 @@ const EditServiceInput = ({ apartmentId }) => {
     const { data: services } = useSelector(state => state.servicesForCurrentApartment);
     const { value: selectedServiceId, bind } = useField('null');
     const dispatch = useDispatch();
-    console.log(allServices);
+    // console.log(allServices);
     useEffect(() => {
         dispatch(getAllServiceAction());
     }, []);
@@ -333,10 +333,14 @@ const EditServiceInput = ({ apartmentId }) => {
         dispatch(getServicesForApartmentAction(apartmentId));
     }, [apartmentId]);
     const handleAddServiceToApartment = () => {
-        dispatch(addServiceToApartmentAction(apartmentId, selectedServiceId));
+           if(!(selectedServiceId=='null')){
+                dispatch(addServiceToApartmentAction(apartmentId, selectedServiceId));
+           }
+
     }
     const handleDeleteServiceFromApartment = (apartmentId, serviceId) => {
-        dispatch(deleteServiceFromApartmentAction(apartmentId, serviceId));
+
+            dispatch(deleteServiceFromApartmentAction(apartmentId, serviceId));
     }
     return (<div className="edit-apartmentcontainer__item d-flex">
         <div className="apartment-service-container">
@@ -366,7 +370,7 @@ const EditServiceInput = ({ apartmentId }) => {
             </select>
         </div>
         <div className="ml-3">
-            <button onClick={handleAddServiceToApartment} className="btn btn-success add-subway-btn">+</button>
+            <button disabled={selectedServiceId=='null'} onClick={handleAddServiceToApartment} className="btn btn-success add-subway-btn">+</button>
         </div>
     </div>);
 }

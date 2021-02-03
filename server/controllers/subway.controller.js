@@ -79,3 +79,26 @@ exports.subWayById = async (req, res) => {
         })
     }
 }
+
+exports.deleteSubWay =async(req,res)=>{
+    let {subwayId} = req.params;
+    try{
+        let findedSubway = await Subway.destroy({
+            where:{
+                id:subwayId
+            }
+        });
+        let allSubWay = await Subway.findAll();
+        return res.json({
+            status:'ok',
+            subways:allSubWay,
+            msg:'метро успешно удалено'
+         });
+    } catch(e){
+        return res.json({
+            status:'error',
+            msg:'не удалось удалить'
+        });
+    }
+     
+}

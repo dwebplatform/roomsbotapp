@@ -11,6 +11,7 @@ import { Header } from './routercomponents/Header';
 import { OrderPage } from './routercomponents/OrderPage';
 import { ApartmentPage } from './routercomponents/ApartmentPage';
 import { SubWayPage } from './routercomponents/SubWayPage';
+import {ServiceForApartmentPage} from './routercomponents/ServiceForApartmentPage';
 
 //TODO : LOGIN PAGE
 function App() {
@@ -26,6 +27,9 @@ function App() {
         </Route>
         <Route path='/subways'>
           <SubWayPage />
+        </Route>
+        <Route path='/services'>
+          <ServiceForApartmentPage/>
         </Route>
       </Switch>
     </>

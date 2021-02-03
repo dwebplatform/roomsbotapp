@@ -5,6 +5,16 @@ export class ServiceUtilContainer {
     }
 
 
+    async deleteSubWayById(subwayId){
+        let response = await axios.post(`/api/subway/delete/${subwayId}`);
+        return response;
+    }
+    async updateServiceName(serviceId, newServiceName){
+        let response = await axios.post('/api/services/update',
+                { serviceId, 
+                  newServiceName});
+        return response;
+    }
     async addServiceToApartment(apartmentId, selectedServiceId) {
 
         let response = await axios.post('/api/services/add-to-apartment', {

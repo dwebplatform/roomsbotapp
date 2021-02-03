@@ -40,14 +40,60 @@ export const GET_ALL_SERVICES_ERROR = "GET_ALL_SERVICES_ERROR";
 export const ADD_SERVICE_TO_APARTMENT_SUCCESS = "ADD_SERVICE_TO_APARTMENT_SUCCESS";
 export const ADD_SERVICE_TO_APARTMENT_ERROR = "ADD_SERVICE_TO_APARTMENT_ERROR";
 
+export const UPDATE_SERVICE_NAME_SUCCESS = "UPDATE_SERVICE_NAME_SUCCESS";
+export const UPDATE_SERVICE_NAME_ERROR = "UPDATE_SERVICE_NAME_ERROR";
+
+export const UPDATE_BASIC_FIELDS_SUCCESS = "UPDATE_BASIC_FIELDS_SUCCESS";
+
+export const DELETE_SUBWAY_BY_ID_SUCCESS ="DELETE_SUBWAY_BY_ID_SUCCESS";
+export const DELETE_SUBWAY_BY_ID_ERROR ="DELETE_SUBWAY_BY_ID_ERROR";
+
+
+
+export const handleDeleteSubWayAction=(subwayId)=>async (dispatch, getState)=>{
+    let { data } = await getState().serviceUtilContainer.deleteSubWayById(subwayId);
+    console.log(data)
+    if(data.status=='ok'){
+        dispatch({
+
+            type:DELETE_SUBWAY_BY_ID_SUCCESS,
+            payload:{
+                subways:data.subways
+            }
+        });
+    } else {
+        dispatch({
+            type:DELETE_SUBWAY_BY_ID_ERROR
+        });
+        
+    }
+    
+}
+export const updateServiceNameAction = (serviceId, newServiceName) => async (dispatch, getState) => {
+    let { data } = await getState().serviceUtilContainer.updateServiceName(serviceId, newServiceName);
+    if (data.status === 'ok') {
+        dispatch({
+            payload: {
+                services: data.services,
+            },
+            type: UPDATE_SERVICE_NAME_SUCCESS
+        })
+    } else {
+        dispatch({
+            type: UPDATE_SERVICE_NAME_ERROR
+
+        })
+    }
+}
 
 export const addServiceToApartmentAction = (apartmentId, selectedServiceId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.addServiceToApartment(apartmentId, selectedServiceId);
-
     if (data.status == 'ok') {
         dispatch({
             type: ADD_SERVICE_TO_APARTMENT_SUCCESS,
-
+            payload: {
+                service: data.service,
+            }
         })
     } else {
         dispatch({
@@ -59,9 +105,7 @@ export const addServiceToApartmentAction = (apartmentId, selectedServiceId) => a
 }
 export const getAllServiceAction = () => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.getAllServices();
-    console.log(data)
     if (data.status == 'ok') {
-
         dispatch({
             type: GET_ALL_SERVICES_SUCCESS,
             payload: {
@@ -82,7 +126,6 @@ export const getAllServiceAction = () => async (dispatch, getState) => {
 }
 export const deleteServiceFromApartmentAction = (apartmentId, serviceId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.deleteServiceFromApartmentAction(apartmentId, serviceId);
-    console.log({ data })
     if (data.status === 'ok') {
         dispatch({
             type: REMOVE_SERVICE_FROM_APARTMENT_SUCCESS,
@@ -223,6 +266,9 @@ export const addNewImageToApartmentAction = (apartmentId, imageFileArray) => asy
 export const updateBasicApartmentFieldsAction = (apartmentId, fields) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.updateApartmentById(apartmentId, fields);
     console.log({ data });
+    dispatch({
+        type: UPDATE_BASIC_FIELDS_SUCCESS
+    });
 
 };
 

@@ -10,7 +10,8 @@ module.exports = (app) => { // роуты для тренеров
     router.get('/all',servicesController.getAllServices);    
     router.post('/remove-from-apartment', servicesController.removeServiceFromApartment);
 	router.get('/all-for-apartment/:apartmentId',servicesController.getServicesForApartment);    
-    router.post('/add-to-apartment',servicesController.addServiceToApartment)
+    router.post('/add-to-apartment',servicesController.addServiceToApartment);
+    router.post('/update', servicesController.updateServiceName);
     app.use('/api/services', router);
 };
 
