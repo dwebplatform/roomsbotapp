@@ -20,7 +20,7 @@ export const OrderComponent = ({ id, className, fullInfo, status }) => {
         dispatch(updateStatusAction(selectedStatus, id));
     }
     return (<div className={`order-container ${className ? className : ''}`}>
-        <div className={`order ${status == 0 ? 'order__status-new' : ''} `}>
+        <div className={`order ${status == 0 ? 'order__status-new' : ''}`}>
             <div className="order__client">
                 <h3>Клиент</h3>
                 <div className="order__client-info ">

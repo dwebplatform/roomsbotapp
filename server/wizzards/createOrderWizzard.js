@@ -99,7 +99,7 @@ const createOrderWizzardScene = new WizardScene(
                     value: false
                 })
             }]];
-            ctx.reply('Вы ввели не правильное поле повторить ?', Markup.inlineKeyboard(inlineYesNoKeyboard));
+            ctx.reply('Вы ввели не правильное поле . Повторить ?', Markup.inlineKeyboard(inlineYesNoKeyboard));
             return ctx.wizard.back();
         }
     },
@@ -109,7 +109,9 @@ const createOrderWizzardScene = new WizardScene(
         }
         const orderData = { orderInfo: ctx.session.orderInfo };
         try {
-            let { data } = await axios.post(DOMAIN_ROOT + '/api/order/create', orderData);
+            //! расскоментировать
+            // let { data } = await axios.post(DOMAIN_ROOT + '/api/order/create', orderData);
+            let { data } = await ctx.session.telBotApiService.createOrder(orderData);
             if (data && data.status == 'ok') {
                 console.log(data)
                 await ctx.reply('Наш менеджер скоро с вами свяжется');

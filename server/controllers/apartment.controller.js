@@ -68,6 +68,7 @@ exports.removeSubWayFromApartment = async (req, res) => {
         await apartment.removeSubway(subway);
         return res.json({
             status: 'ok',
+            subway: subway,
             msg: 'успешно удалено метро из данной квартиры'
         });
     } catch (e) {

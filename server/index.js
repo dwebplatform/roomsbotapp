@@ -6,8 +6,8 @@ const API_DOMAIN = 'http://localhost:8000';
 const path = require('path');
 const Sequelize = require('sequelize');
 const express = require('express');
-var bodyParser = require('body-parser')
-
+const bodyParser = require('body-parser')
+const jwt = require('jsonwebtoken');
 const app = express();
 const paginate = require('express-paginate');
 const fileUpload = require('express-fileupload');
@@ -100,7 +100,7 @@ const stage = new Stage();
 
 // stage.register(create);
 const { createOrderWizzardScene } = require('./wizzards/createOrderWizzard');
-const { subwayAndOrderWizzard } = require('./wizzards/subwayAndOrderWizzardSecond');
+const { subwayAndOrderWizzard } = require('./wizzards/subwayAndOrderWizzardThird');
 stage.register(createOrderWizzardScene, subwayAndOrderWizzard);
 bot.use(session());
 bot.use(stage.middleware());
@@ -152,26 +152,45 @@ function createApartmentButtons(allApartments) {
 // список кнопок из всех кнопок
 //TODO нижний комментарий это все квартиры
 const superBotHelper = require('./botHelpers/superBotHelpers');
+const { BotApi } = require('./apiinterfaces/ApartmentApi');
 // bot.start(choseApartmentBotButtons);
 // bot.start(superBotHelper.startCommands.subwayStart);
-
-
-
 bot.start((ctx) => {
-    // superBotHelper.startCommands.subwayStart(ctx);
-
-
-    //начинаем выбор метро разкоментировать
-    ctx.reply("Добро пожаловать в бот поиск квартиры здесь вы можете найти квартиру на любой вкус", Markup.inlineKeyboard([{
-        text: 'Начать',
-        callback_data: JSON.stringify({
-            type: 'start_chat'
-        })
-    }]));
+    if (!ctx.session.orderInfo) {
+        ctx.session.orderInfo = {};
+    }
+    if (!ctx.session.telBotApiService) {
+        ctx.session.telBotApiService = new BotApi('1234');
+    }
+    ctx.reply(`Добрый день это бот поиска квартир в центре, если вы ходите сделать заявку нажмите на кнопку продолжить `, Markup.inlineKeyboard([
+        [{
+            text: 'Ок',
+            callback_data: JSON.stringify({ type: 'begin_ask' })
+        }]
+    ]));
     // ctx.scene.enter("subway_and_order");
 })
-bot.on('message', (ctx) => {
 
+function getUserContacts(ctx) {
+    if (ctx.update && ctx.update.message && ctx.update.message.contact) {// если пользователь нажал на кнопку передать данные
+        let { first_name, last_name, phone_number } = ctx.update.message.contact;
+        if (!ctx.session.orderInfo || !ctx.session.orderInfo.client) {
+            ctx.session.orderInfo = {
+                "client": {
+                    "name": first_name,
+                    "phone": phone_number,
+                    "secondName": last_name,
+                    "email": "anonim@mail.ru"
+                }
+            };
+        }
+        ctx.reply('Спасибо теперь можете перейти к списку метро', Markup.inlineKeyboard([{ text: 'Ок', callback_data: JSON.stringify({ type: 'start_chat' }) }]));
+    }
+
+}
+
+bot.on('message', (ctx) => {
+    getUserContacts(ctx);
     // const inlineMessageRatingKeyboard = [[
     //     { text: '👍', callback_data: 'like' },
     //     { text: '👎', callback_data: 'dislike' }
@@ -190,26 +209,45 @@ const handleTelegrafCallBackQuery = bot => {
         let strData = ctx.callbackQuery.data;
         const { type, value } = JSON.parse(strData);
         // console.log({ value });
+        if (type == 'begin_ask') {
+            ctx.reply('Разрешите получить ваши контактные данные ', {
+                reply_markup: JSON.stringify({
+                    keyboard: [
+                        [{
+                            text: 'Отправить свои контактные данные',
+                            request_contact: true
+                        }]
+                    ],
+                    resize_keyboard: true,
+                    one_time_keyboard: true
+                })
+            }
+            );
+        }
         if (type === 'start_chat') {
             superBotHelper.startCommands.subwayStart(ctx)
             ctx.scene.enter("subway_and_order");
         }
         if (type === 'create_order') {
             // создаем Order
+            console.log({ orderInfo: ctx.session.orderInfo });
             ctx.session.selectedApartmentId = value;
-            if (!ctx.session.orderInfo) {
+            if (!ctx.session.orderInfo['apartments']) {
                 ctx.session.orderInfo = {
-                    "client": {
-                        "name": "Павел",
-                        "phone": 88001234516,
-                        "secondName": "Карлов",
-                        "email": "buratin@mail.ru"
-                    },
+                    ...ctx.session.orderInfo,
+                    // "client": {
+                    //     "name": "Павел",
+                    //     "phone": 88001234516,
+                    //     "secondName": "-",
+                    //     "email": "anonim@mail.ru"
+                    // },
                     // заполняем apartments[id]
                     "apartments": {
                         [ctx.session.selectedApartmentId]: {},
                     }
                 };
+            } else {
+
             }
             ctx.reply("Отлично: введите ваше имя");
             ctx.scene.enter("create_order");
@@ -221,18 +259,73 @@ bot.on('callback_query', handleTelegrafCallBackQuery(bot));
 // bot.action("create_order", (ctx) => {
 //     // ctx.scene.enter("create")
 // });
-// bot.help((ctx) => ctx.reply('Send me a sticker'))
-// bot.on('sticker', (ctx) => ctx.reply('👍'))
-// bot.hears('hi', (ctx) => ctx.reply('Hey there'))
+
+
 bot.launch();
 
+// function tokenHandler(req,res,next){
+//    const authHeader = req.headers['authorization']
+//   const token = authHeader && authHeader.split(' ')[1]
+//   if (token == null) return res.json({
+//     status:'error',
+//     msg:'not authorized'
+//   }); // if there isn't any token
 
+//   jwt.verify(token, process.env.TOKEN_PRIVATE_KEY, (err, user) => {
+//     if (err) return res.json({status:'error',msg:'not authorized'});
+//     req.user = user;
+//     next(); // pass the execution off to whatever request the client intended
+//   });
+// }
+// app.get('/api/protected',tokenHandler,(req,res)=>{
+//     return res.json({
+//         status:'ok',
+//         msg:'protected route'
+//     })
+// });
+app.post('/api/login', async (req, res) => {
+    let { pass, email } = req.body;
+    if (!pass || !email) {
+        return res.json({
+            status: 'error',
+            msg: 'не был передан пароль или email'
+        });
+    }
+    //TODO: get from  db Client model
 
+    if (pass === process.env.ADMIN_PASSWORD && email === process.env.ADMIN_EMAIL) {
 
-// old bot
-// bot.on('message', handleBotMessage(bot));
-// bot.on('callback_query', handleBotCallBackQuery(bot));
-// bot.on("polling_error", console.log);
+        let signObject = {
+            id: 1,
+            email: email
+        };
+        jwt.sign(signObject, process.env.TOKEN_PRIVATE_KEY, {}, function (err, token) {
+            if (err) {
+                return res.json({
+                    status: 'error',
+                    msg: 'not authorized'
+                });
+            }
+            return res.json({
+                status: 'ok',
+                token: token
+            });
+        });
+    } else {
+        return res.json({
+            status: 'error',
+            msg: 'not auth'
+        })
+    }
+});
+// app.use((req,res,next)=>{
+//     if(req.query.api_key!=='1234'){
+//     return res.json({
+//         status:'error'
+//     });
+//     }
+//     next();
+// });
 
 
 require('./routes/services.routes')(app);
@@ -240,9 +333,7 @@ require('./routes/main.routes')(app);
 require('./routes/apartment-subway.routes')(app);
 require('./routes/apartment.routes')(app);
 require('./routes/subway.routes')(app);
-(async () => {
-
-})()
+require('./routes/telegram.routes')(app);
 app.get('/api/create-order', async (req, res) => {
     let uid;
     let services = [2, 5, 7]; // services.uids
@@ -363,10 +454,13 @@ app.get('/api/order-look', async (req, res) => {
     }
 
     return res.json(order);
-})
+});
+
+
+
 app.get('/api/clients', async (req, res) => {
     let allclients = await Client.findAll();
-    return res.json(allclients)
+    return res.json(allclients);
 });
 
 app.listen(8000, () => {

@@ -2,8 +2,8 @@ import { useState } from 'react';
 import moment from 'moment';
 import './filterorder.css';
 
-export const FilterOrderComponent = ({ curentFilter, filterHandleChange }) => {
 
+export const FilterOrderComponent = ({ curentFilter, filterHandleChange }) => {
     let initialFromDate = moment.unix(curentFilter.fromDate).format("YYYY-MM-DD");
     let initialToDate = moment.unix(curentFilter.toDate).format("YYYY-MM-DD");
     const [fromDate, setFromDate] = useState(initialFromDate);

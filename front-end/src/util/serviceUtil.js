@@ -3,7 +3,19 @@ import axios from 'axios';
 export class ServiceUtilContainer {
     constructor() {
     }
-
+    config() {
+        const config = {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+        return config;
+    }
+    async getToken(email, pass) {
+        let response = await axios.post('/api/login', {
+            email,
+            pass
+        });
+        return response;
+    }
     async deleteService(serviceId) {
         let response = await axios.post('/api/services/delete', {
             serviceId
@@ -13,11 +25,11 @@ export class ServiceUtilContainer {
     async addService(serviceName) {
         let response = await axios.post('/api/services/create', {
             serviceName
-        });
+        }, this.config());
         return response;
     }
     async deleteSubWayById(subwayId) {
-        let response = await axios.post(`/api/subway/delete/${subwayId}`);
+        let response = await axios.post(`/api/subway/delete/${subwayId}`, this.config());
         return response;
     }
     async updateServiceName(serviceId, newServiceName) {
@@ -25,7 +37,7 @@ export class ServiceUtilContainer {
             {
                 serviceId,
                 newServiceName
-            });
+            }, this.config());
         return response;
     }
     async addServiceToApartment(apartmentId, selectedServiceId) {
@@ -33,7 +45,7 @@ export class ServiceUtilContainer {
         let response = await axios.post('/api/services/add-to-apartment', {
             apartmentId,
             selectedServiceId
-        });
+        }, this.config());
         return response;
     }
 
@@ -46,37 +58,37 @@ export class ServiceUtilContainer {
         let response = await axios.post('/api/services/remove-from-apartment', {
             apartmentId,
             serviceId
-        });
+        }, this.config());
         return response;
 
     }
     async getServicesForApartment(apartmentId) {
-        let response = await axios.get(`/api/services/all-for-apartment/${apartmentId}`);
+        let response = await axios.get(`/api/services/all-for-apartment/${apartmentId}`, this.config());
         return response;
     }
     async addSubway(name, geo) {
-        let response = await axios.post('/api/subway/add', { name, geo });
+        let response = await axios.post('/api/subway/add', { name, geo }, this.config());
         return response;
     }
     async removeSubWayFromApartment(apartmentId, subwayId) {
-        let response = await axios.post(`/api/apartments/${apartmentId}/remove-subway/${subwayId}`);
+        let response = await axios.post(`/api/apartments/${apartmentId}/remove-subway/${subwayId}`, this.config());
         return response;
     }
     /*
     * 
     route("/api/subway/all)" */
     async getAllSubWays() {
-        let response = await axios.get('/api/subway/all');
+        let response = await axios.get('/api/subway/all', this.config());
         return response;
     }
     async deleteApartmentById(apartmentId) {
-        let response = await axios.post(`/api/apartments/delete/${apartmentId}`);
+        let response = await axios.post(`/api/apartments/delete/${apartmentId}`, this.config());
         return response;
     }
     async addSubwayForApartment(addedSubwayId, apartmentId) {
         let response = await axios.post('/api/apartments-subway/add-to-apartment', {
             addedSubwayId, apartmentId
-        });
+        }, this.config());
         return response;
     }
     async getAllSubway(apartmentId = null) {
@@ -84,7 +96,7 @@ export class ServiceUtilContainer {
         if (typeof apartmentId !== 'null') {
             url += apartmentId;
         }
-        let response = axios.get(url);
+        let response = axios.get(url, this.config());
         return response;
     }
     async addNewImageToApartment(apartmentId, imageFilesArray) {
@@ -92,25 +104,25 @@ export class ServiceUtilContainer {
         imageFilesArray.forEach((file, index) => {
             formData.append(`apartment_added_image_${index}`, file);
         });
-        let response = await axios.post(`/api/apartments/add-images/${apartmentId}`, formData);
+        let response = await axios.post(`/api/apartments/add-images/${apartmentId}`, formData, this.config());
         return response;
     }
     async updateApartmentById(apartmentId, fields) {
-        let response = await axios.post(`/api/apartments/update-basic-fields/${apartmentId}`, fields);
+        let response = await axios.post(`/api/apartments/update-basic-fields/${apartmentId}`, fields, this.config());
         return response;
     }
     async deleteApartmentImageByIndex(apartmentId, imageIndex) {
         let response = await axios.post(`/api/apartments/delete-image-by-index`, {
             apartmentId, imageIndex
-        });
+        }, this.config());
         return response;
     }
     async getApartmentById(apartmentId) {
-        let response = await axios.get(`/api/apartments/${apartmentId}`);
+        let response = await axios.get(`/api/apartments/${apartmentId}`, this.config());
         return response;
     }
     async getAllApartments() {
-        let response = await axios.get('/api/apartments/all-without-pagination');
+        let response = await axios.get('/api/apartments/all-without-pagination', this.config());
         return response;
     }
     async createApartment(data) {
@@ -122,12 +134,11 @@ export class ServiceUtilContainer {
             index++;
         });
         delete data['images'];
-        console.log({ data });
         // create formData 
         for (let key in data) {
             formData.append(key, data[key]);
         }
-        let response = await axios.post('/api/apartments/create', formData);
+        let response = await axios.post('/api/apartments/create', formData, this.config());
         return response;
     }
     async updateOrderStatus(selectedStatus, orderId) {
@@ -157,8 +168,7 @@ export class ServiceUtilContainer {
         if (filterObject.toDate) {
             finalUrl += '&to=' + filterObject.toDate;
         }
-        let response = await fetch(finalUrl);
-        let data = await response.json();
+        let { data } = await axios.get(finalUrl, this.config());
         console.log(filterObject, "FILTER OBJECT")
         return data;
     }

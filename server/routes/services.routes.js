@@ -2,7 +2,8 @@
 
 
 const paginate = require('express-paginate');
-
+ const {tokenHandler} = require('../utils/tokenMiddleWare');
+ 
 const { Order, Apartment, Service } = require('../models');
 module.exports = (app) => { // роуты для тренеров
     const servicesController = require('../controllers/services.controller');

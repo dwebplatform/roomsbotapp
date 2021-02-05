@@ -19,7 +19,10 @@ function convertApartmentIdsForPriceButton(ctx, apartmentIds) {
     };
 
     apartmentIds.forEach(async (apartmentId, index) => {
-        let { data } = await apartmentApiInstance.getApartmentsByIds([apartmentId]);
+
+        let { data } = await ctx.session.telBotApiService.getApartmentsByIds([apartmentId]);
+        // !расскоментировать
+        // let { data } = await apartmentApiInstance.getApartmentsByIds([apartmentId]);
         if (data && data.apartments) {
             let curApartment = data.apartments[0] || {};
             console.log(curApartment.price);
@@ -42,16 +45,22 @@ function convertApartmentIdsForPriceButton(ctx, apartmentIds) {
         if (index == apartmentIds.length - 1) {
             // createPriceButtons(priceContainer);
             await ctx.reply('Укажите цену по которой вы бы хотели приобрести квартиру');
+            let buttons = [];
             for (let key in priceContainer) {
                 if (priceContainer[key].length > 0) {// если квартиры тут есть
                     let apartmentIds = priceContainer[key].map((item) => item.id).join(':');
                     console.log({ apartmentIds })
-                    await ctx.reply(key, Markup.inlineKeyboard([{
+                    buttons.push([{
                         text: `Цена: ${key}`,
                         callback_data: JSON.stringify({ type: 'press_price', value: apartmentIds })
-                    }]));
+                    }]);
+                    // await ctx.reply('', Markup.inlineKeyboard([{
+                    //     text: `Цена: ${key}`,
+                    //     callback_data: JSON.stringify({ type: 'press_price', value: apartmentIds })
+                    // }]));
                 }
             }
+            await ctx.reply('Доступные цены', Markup.inlineKeyboard(buttons));
         }
     });
 }
@@ -136,8 +145,6 @@ const subwayAndOrderWizzard = new WizardScene(
 function isButtonPressed(ctx) {
     return ctx.update && ctx.update.callback_query;
 }
-
-
 async function choosePriceIntervalButton(ctx, data) {
     let { type, value } = data;
     if (type !== 'press_price') {
@@ -145,16 +152,17 @@ async function choosePriceIntervalButton(ctx, data) {
         ctx.reply('Что-то пошло не так ');
         return;
     }
-
     let apartmentIds = value.split(':');
-    let response = await apartmentApiInstance.getApartmentsByIds(apartmentIds);
+    console.log({ apartmentIds });
+    //!расскоментировать
+    // let response = await apartmentApiInstance.getApartmentsByIds(apartmentIds);
+    let response = await ctx.session.telBotApiService.getApartmentsByIds(apartmentIds);
+
     if (response.data && response.data.status === 'ok') {
         showApartmentsMessage(ctx, response.data);
     } else {
         ctx.reply('Произошла серверная ошибка извините');
     }
-
-
 }
 //! value это строка "roomAmount:apartmen1Id:apartmen2Id" первый аргумент это количество комнат остальные это id этих квартир 
 async function chooseAmountOfRoomsButton(ctx, data) {
@@ -166,7 +174,6 @@ async function chooseAmountOfRoomsButton(ctx, data) {
     let [amountOfRoom, ...apartmentIds] = value.split(':');
     // цены в интервалах 
     convertApartmentIdsForPriceButton(ctx, apartmentIds);
-
     ctx.reply('вы выбрали количество комнат');
     await ctx.wizard.next();
 }
@@ -179,7 +186,12 @@ async function chooseSubwayButtonHandler(ctx, data) {
     }
     ctx.session.subwayId = value;
     // делаем запрос на получение квартир с таким метро и возвращаем кнопки
-    let { data: responseData } = await apartmentApiInstance.getApartmetnsWithBySubWayId(value);
+
+    console.log(ctx.session.telBotApiService);
+    console.log('THIS IS THE BOT API')
+    let { data: responseData } = await ctx.session.telBotApiService.getApartmetnsWithBySubWayId(value);
+    //!расскоментировать
+    // let { data: responseData } = await apartmentApiInstance.getApartmetnsWithBySubWayId(value);
     if (responseData.status === 'ok') {
         try {
             let inlineKeyBoard = createRoomsAmountButton(responseData.roomsAmountWithApartmentsIds);
@@ -199,12 +211,9 @@ async function chooseSubwayButtonHandler(ctx, data) {
 }
 
 function showApartmentsMessage(ctx, data) {
-    console.log({ data: data })
+    console.log({ data: data });
     let { apartments } = data;
-    //
-    const imageContainer = {
-
-    };
+    const imageContainer = {};
     for (let ap of apartments) {
         if (ap.images && ap.images.length) {
             imageContainer[ap.id] = ap.images[0];
@@ -218,11 +227,8 @@ function showApartmentsMessage(ctx, data) {
         await ctx.replyWithPhoto({
             url: DOMAIN_ROOT + imageInfo
         }, Markup.inlineKeyboard([btn]));
-        // await ctx.reply('->', Markup.inlineKeyboard([btn]));
     });
     ctx.scene.leave();
-
-
     // раскоментировать!!!
     // ctx.reply('Вы выбрали квартиры с определенным кол-вом комнат', Markup.inlineKeyboard(inlineKeyBoard));
 }

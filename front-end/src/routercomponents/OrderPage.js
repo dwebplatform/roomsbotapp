@@ -4,14 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { OrderComponent } from '../components/OrderComponent';
 import { FilterOrderComponent } from '../components/FilterOrderComponent';
 import { getOrdersAction } from '../reducers/actions';
-import { useRouteMatch } from 'react-router-dom';
 export const OrderPage = () => {
-
     const dispatch = useDispatch();
     const [curPage, setPage] = useState(1);
+    localStorage.getItem('from_date');
+    localStorage.getItem('to_date');
     const [filterObject, setFilterObject] = useState({
-        fromDate: new Date().getTime() / 1000,
-        toDate: new Date().getTime() / 1000 + 30 * 24 * 3600
+        fromDate: localStorage.getItem('from_date') ? localStorage.getItem('from_date') : new Date().getTime() / 1000,
+        toDate: localStorage.getItem('to_date') ? localStorage.getItem('to_date') : new Date().getTime() / 1000 + 30 * 24 * 3600
     });
     const handleFilterChange = ({ fromDate, toDate }) => {
         let unixFromDate = Date.parse(fromDate) / 1000;

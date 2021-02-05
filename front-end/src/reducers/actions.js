@@ -56,6 +56,34 @@ export const ADD_NEW_SERVICE_ERROR = "ADD_NEW_SERVICE_ERROR";
 export const DELETE_SERVICE_SUCCESS = "DELETE_SERVICE_SUCCESS";
 export const DELETE_SERVICE_ERROR = "DELETE_SERVICE_ERROR";
 
+
+export const GET_TOKEN_SUCCESS = "GET_TOKEN_SUCCESS";
+export const GET_TOKEN_ERROR = "GET_TOKEN_ERROR";
+
+export const LOG_OUT = "LOG_OUT";
+export const logoutAction = () => {
+    return {
+        type: LOG_OUT
+    }
+};
+export const submitUserAction = (email, pass) => async (dispatch, getState) => {
+    let { data } = await getState().serviceUtilContainer.getToken(email, pass);
+    if (data.status == 'ok') {
+        dispatch({
+            type: GET_TOKEN_SUCCESS,
+            payload: {
+                token: data.token
+            }
+        });
+    } else {
+        dispatch({
+            type: GET_TOKEN_ERROR,
+            payload: {
+                msg: 'не удалось войти'
+            }
+        });
+    }
+}
 export const deleteServiceAction = (serviceId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.deleteService(serviceId);
     if (data.status == 'ok') {
@@ -179,7 +207,6 @@ export const deleteServiceFromApartmentAction = (apartmentId, serviceId) => asyn
 
 export const getServicesForApartmentAction = (apartmentId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.getServicesForApartment(apartmentId);
-    console.log({ data });
     if (data.status == 'ok') {
         dispatch({
             type: GET_SERVICE_TO_APARTMENT_SUCCESS,
@@ -222,10 +249,12 @@ export const addSubWayAction = ({ name, geo }) => async (dispatch, getState) => 
 
 export const removeSubWayFromApartmentAction = (apartmentId, subwayId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.removeSubWayFromApartment(apartmentId, subwayId);
-
     if (data.status === 'ok') {
         dispatch({
             type: REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS,
+            payload: {
+                subway: data.subway
+            }
         });
     } else {
         dispatch({
@@ -249,10 +278,13 @@ export const deleteApartmentByIdAction = (apartmentId) => async (dispatch, getSt
 }
 export const addSubwayForApartmentAction = (addedSubwayId, apartmentId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.addSubwayForApartment(addedSubwayId, apartmentId);
+    console.log({ data });
     if (data.status == 'ok') {
         dispatch({
             type: ADD_SUBWAY_TO_APARTMENT_SUCCESS,
-
+            payload: {
+                subway: data.subway
+            }
         })
     } else {
         dispatch({
@@ -348,7 +380,7 @@ export const clearOrderEventAction = () => async (dispatch, getState) => {
         type: CLEAR_ORDER_EVENT
     });
 }
-export const createOrderAction = (formDataObject) => async (dispatch, getState) => {
+export const createApartmentAction = (formDataObject) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.createApartment(formDataObject);
     if (data.status === 'ok') {
         dispatch({
@@ -422,6 +454,8 @@ export const getOrdersAction = (page, { filterObject }) => async (dispatch, getS
         page = page || 1;
         // add filter params = fromDate, toDate
         console.log('DISPATCHED FILTER OBJECT NOW', filterObject);
+        localStorage.setItem('from_date', filterObject.fromDate);
+        localStorage.setItem('to_date', filterObject.toDate);
         let data = await getState().serviceUtilContainer.getOrders(page, { filterObject });
         if (data.status == 'ok') {
             dispatch({

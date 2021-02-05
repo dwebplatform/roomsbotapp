@@ -7,10 +7,6 @@ import './subway.css';
 
 
 
-
-
-
-
 export const SubWayPage = () => {
     const [subWayFields, setSubWayFields] = useState({
         name: '',

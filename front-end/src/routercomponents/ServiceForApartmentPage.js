@@ -48,7 +48,7 @@ export const ServiceForApartmentPage = () => {
                             return (<li
                                 key={item.id} className="list-group-item active"><input
                                     type="text"
-                                    onBlur={() => handleBlurChange()}
+                                    onBlur={handleBlurChange}
                                     className="form-control"
                                     value={chosenServiceName}
                                     onChange={(e) => setChosenServiceName(e.target.value)}

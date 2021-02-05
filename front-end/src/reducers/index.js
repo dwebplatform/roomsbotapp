@@ -1,17 +1,19 @@
 import { DummyContainer, ServiceUtilContainer } from "../util/serviceUtil";
-import { DELETE_SUBWAY_BY_ID_SUCCESS, DELETE_SUBWAY_BY_ID_ERROR, IMAGE_ADD_TO_APARTMENT_FAIL, REMOVE_SUBWAY_FROM_APARTMENT_ERROR, ADD_SUBWAY_TO_APARTMENT_ERROR, ADD_SERVICE_TO_APARTMENT_ERROR, UPDATE_SERVICE_NAME_ERROR, UPDATE_SERVICE_NAME_SUCCESS, ADD_SERVICE_TO_APARTMENT_SUCCESS, GET_ALL_SERVICES_SUCCESS, GET_ALL_SERVICES_ERROR, REMOVE_SERVICE_FROM_APARTMENT_SUCCESS, REMOVE_SERVICE_FROM_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_SUCCESS, DELETE_APARTMENT_BY_ID_SUCCESS, REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS, GET_ORDERS, CREATE_APARTMENT, ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS, IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS, ADD_SUBWAY_ERROR, ADD_SUBWAY_SUCCESS, UPDATE_BASIC_FIELDS_SUCCESS, DELETE_APARTMENT_BY_ID_ERROR, CLEAR_ORDER_EVENT, ADD_NEW_SERVICE_ERROR, ADD_NEW_SERVICE_SUCCESS } from "./actions";
+import { GET_TOKEN_SUCCESS, GET_TOKEN_ERROR, DELETE_SUBWAY_BY_ID_SUCCESS, DELETE_SUBWAY_BY_ID_ERROR, IMAGE_ADD_TO_APARTMENT_FAIL, REMOVE_SUBWAY_FROM_APARTMENT_ERROR, ADD_SUBWAY_TO_APARTMENT_ERROR, ADD_SERVICE_TO_APARTMENT_ERROR, UPDATE_SERVICE_NAME_ERROR, UPDATE_SERVICE_NAME_SUCCESS, ADD_SERVICE_TO_APARTMENT_SUCCESS, GET_ALL_SERVICES_SUCCESS, GET_ALL_SERVICES_ERROR, REMOVE_SERVICE_FROM_APARTMENT_SUCCESS, REMOVE_SERVICE_FROM_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_SUCCESS, DELETE_APARTMENT_BY_ID_SUCCESS, REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS, GET_ORDERS, CREATE_APARTMENT, ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS, IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS, ADD_SUBWAY_ERROR, ADD_SUBWAY_SUCCESS, UPDATE_BASIC_FIELDS_SUCCESS, DELETE_APARTMENT_BY_ID_ERROR, CLEAR_ORDER_EVENT, ADD_NEW_SERVICE_ERROR, ADD_NEW_SERVICE_SUCCESS, LOG_OUT } from "./actions";
 import { immitateDeletionServiceFromApartment, immitateAddServiceToApartment } from "./redux-helpers";
 
 
 // тут только одну переменную меняешь
 let isDummy = false;
 const initialState = {
+    isAuth: localStorage.getItem('token') ? true : false,
     serviceUtilContainer: !isDummy ? new ServiceUtilContainer() : new DummyContainer(),
     orders: {
         data: [],
         error: false,
         loading: false
     },
+    adminToken: localStorage.getItem('token') ? localStorage.getItem('token') : '',
     subwaysNotIncludedInApartment: {
         data: [],
         error: false,
@@ -46,6 +48,30 @@ const initialState = {
 const reducer = (state = initialState, action) => {
     const { type, payload } = action;
     switch (type) {
+        case LOG_OUT:
+            localStorage.removeItem('token');
+            return {
+                ...state,
+                isAuth: false
+            }
+        case GET_TOKEN_SUCCESS:
+            console.log(payload);
+            localStorage.setItem('token', payload.token);
+            return {
+                ...state,
+                isAuth: true,
+                popupInfo: {}
+            };
+        case GET_TOKEN_ERROR:
+            return {
+                ...state,
+                isAuth: false,
+                popupInfo: {
+                    authError: {
+                        msg: 'Доступ был запрещен'
+                    }
+                }
+            }
         case ADD_NEW_SERVICE_SUCCESS:
 
             return {
@@ -169,7 +195,6 @@ const reducer = (state = initialState, action) => {
                 }
             }
         case REMOVE_SERVICE_FROM_APARTMENT_SUCCESS:
-            //TODO: сделать аналогично для добавления
             let servicesForCurrentApartmentAfterDelete = immitateDeletionServiceFromApartment(state.servicesForCurrentApartment, payload.serviceId);
 
             return {
@@ -201,6 +226,7 @@ const reducer = (state = initialState, action) => {
                 }
             };
         case ADD_SUBWAY_SUCCESS:
+
             return {
                 ...state,
                 popupInfo: {
@@ -228,8 +254,21 @@ const reducer = (state = initialState, action) => {
                 }
             }
         case REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS:
+            //TODO: remove subway from current apartment
+            let removedSubway = payload.subway;
+            console.log({ removedSubway });
+            // const { subway } = payload;
+            let subwayAfterDeleted = state.apartment.data.Subways ? state.apartment.data.Subways : [];
+            subwayAfterDeleted = subwayAfterDeleted.filter((item) => item.id != removedSubway.id);
             return {
                 ...state,
+                apartment: {
+                    ...state.apartment,
+                    data: {
+                        ...state.apartment.data,
+                        Subways: subwayAfterDeleted
+                    }
+                },
                 popupInfo: {
                     removeSubWayFromApartmentSuccess: true
                 }
@@ -248,7 +287,6 @@ const reducer = (state = initialState, action) => {
                     deletedApartmentSuccess: true
                 }
             }
-
         case ADD_SUBWAY_TO_APARTMENT_ERROR:
             return {
                 ...state,
@@ -257,8 +295,27 @@ const reducer = (state = initialState, action) => {
                 }
             }
         case ADD_SUBWAY_TO_APARTMENT_SUCCESS:
+            const { subway } = payload;
+            let subWaysForCurApartment = state.apartment.data.Subways ? state.apartment.data.Subways : [];
+            subWaysForCurApartment = [...subWaysForCurApartment, subway]; // добавляем в subway для текушей квартиры
+            // и убираем из subwaysNotIncludedInApartment данное метро
+            // state.subwaysNotIncludedInApartment = state.subwaysNotIncludedInApartment.filter((subwayItem) => subwayItem.id != subway.id);
+            let curSubWayInSelector = [...state.subwaysNotIncludedInApartment.data] || [];
+            curSubWayInSelector = curSubWayInSelector.filter((subwayItem) => subwayItem.id !== subway.id);
+
             return {
                 ...state,
+                subwaysNotIncludedInApartment: {
+                    ...state.subwaysNotIncludedInApartment,
+                    data: curSubWayInSelector
+                },
+                apartment: {
+                    ...state.apartment,
+                    data: {
+                        ...state.apartment.data,
+                        Subways: subWaysForCurApartment
+                    }
+                },
                 popupInfo: {
                     subwayAdded: true
                 }
@@ -303,6 +360,7 @@ const reducer = (state = initialState, action) => {
                 }
             };
         case GET_APARTMENT_BY_ID:
+
             return {
                 ...state,
                 apartment: {
@@ -325,15 +383,15 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 popupInfo: {
-                    msg: ' произошла ошибка при попытке создать квартиру'
+                    msg: 'произошла ошибка при попытке создать квартиру'
                 }
             };
         case CREATE_APARTMENT:
             return {
                 ...state,
                 popupInfo: {
-                    createOrderEvent: {
-                        msg: 'Заказ был создан успешно'
+                    createApartmentEvent: {
+                        msg: 'Квартира была создана успешно'
                     },
                     ...payload
                 }
