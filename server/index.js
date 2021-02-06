@@ -3,6 +3,7 @@
 require('dotenv').config();
 
 const API_DOMAIN = 'http://localhost:8000';
+const { parsePhoneNumber } = require("libphonenumber-js");
 const path = require('path');
 const Sequelize = require('sequelize');
 const express = require('express');
@@ -101,22 +102,15 @@ const stage = new Stage();
 // stage.register(create);
 const { createOrderWizzardScene } = require('./wizzards/createOrderWizzard');
 const { subwayAndOrderWizzard } = require('./wizzards/subwayAndOrderWizzardThird');
-stage.register(createOrderWizzardScene, subwayAndOrderWizzard);
+const { askPhoneWizzard } = require('./wizzards/askPhoneWizzard');
+stage.register(askPhoneWizzard, createOrderWizzardScene, subwayAndOrderWizzard);
 bot.use(session());
 bot.use(stage.middleware());
 
 
 
 function createApartmentButtons(allApartments) {
-    // const inlineMessageRatingKeyboard = [[
-    //     { text: '👍', callback_data: 'like' },
-    //     { text: '👎', callback_data: 'dislike' }
-    // ]];
-    // ctx.reply('Тут есть кнопки', {
-    //     reply_markup: JSON.stringify({
-    //         inline_keyboard: inlineMessageRatingKeyboard
-    //     })
-    // });
+
     try {
         const inlineApartmentKeyBoard = allApartments.map((room) => {
             return [{
@@ -153,8 +147,6 @@ function createApartmentButtons(allApartments) {
 //TODO нижний комментарий это все квартиры
 const superBotHelper = require('./botHelpers/superBotHelpers');
 const { BotApi } = require('./apiinterfaces/ApartmentApi');
-// bot.start(choseApartmentBotButtons);
-// bot.start(superBotHelper.startCommands.subwayStart);
 bot.start((ctx) => {
     if (!ctx.session.orderInfo) {
         ctx.session.orderInfo = {};
@@ -162,17 +154,25 @@ bot.start((ctx) => {
     if (!ctx.session.telBotApiService) {
         ctx.session.telBotApiService = new BotApi('1234');
     }
-    ctx.reply(`Добрый день это бот поиска квартир в центре, если вы ходите сделать заявку нажмите на кнопку продолжить `, Markup.inlineKeyboard([
-        [{
+    ctx.reply('Здравствуйте это бот помошник поиска квартир по городу, хотите оформить заявку ?', Markup.inlineKeyboard([[
+        {
             text: 'Ок',
-            callback_data: JSON.stringify({ type: 'begin_ask' })
-        }]
-    ]));
+            callback_data: JSON.stringify({ type: 'begin_ask_phone_info' })
+        }
+    ]]))
+    ctx.scene.enter('ask_phone_info');
+    // ctx.reply(`Добрый день это бот поиска квартир в центре, если вы ходите сделать заявку нажмите на кнопку продолжить `, Markup.inlineKeyboard([
+    //     [{
+    //         text: 'Ок',
+    //         callback_data: JSON.stringify({ type: 'begin_ask' })
+    //     }]
+    // ]));
     // ctx.scene.enter("subway_and_order");
 })
 
 function getUserContacts(ctx) {
     if (ctx.update && ctx.update.message && ctx.update.message.contact) {// если пользователь нажал на кнопку передать данные
+        ctx.session.isBeginAskFinished = true;
         let { first_name, last_name, phone_number } = ctx.update.message.contact;
         if (!ctx.session.orderInfo || !ctx.session.orderInfo.client) {
             ctx.session.orderInfo = {
@@ -189,8 +189,15 @@ function getUserContacts(ctx) {
 
 }
 
+
+bot.command('/tel', (ctx) => {
+
+    let [command, telephone] = ctx.update.message.text.split(' ');
+    ctx.session.isBeginAskFinished = true;
+    ctx.reply('Отлично ваши данные приняты' + telephone);
+})
 bot.on('message', (ctx) => {
-    getUserContacts(ctx);
+
     // const inlineMessageRatingKeyboard = [[
     //     { text: '👍', callback_data: 'like' },
     //     { text: '👎', callback_data: 'dislike' }
@@ -210,6 +217,8 @@ const handleTelegrafCallBackQuery = bot => {
         const { type, value } = JSON.parse(strData);
         // console.log({ value });
         if (type == 'begin_ask') {
+            ctx.session.isBeginAskFinished = false;
+            ctx.session.isMessageCameFromRequestContact = true;
             ctx.reply('Разрешите получить ваши контактные данные ', {
                 reply_markup: JSON.stringify({
                     keyboard: [

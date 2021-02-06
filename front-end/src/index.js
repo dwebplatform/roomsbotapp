@@ -9,7 +9,8 @@ import { Provider } from "react-redux";
 import thunk from 'redux-thunk'
 import reducer from "./reducers";
 import { BrowserRouter } from 'react-router-dom';
-const store = createStore(reducer, applyMiddleware(thunk));
+import logger from 'redux-logger';
+const store = createStore(reducer, applyMiddleware(logger, thunk));
 
 ReactDOM.render(
   <React.StrictMode>

@@ -1,3 +1,4 @@
+export const CHANGE_APARTMENT_ADRESS_FILTER = "CHANGE_APARTMENT_ADRESS_FILTER";
 export const GET_ORDERS = "GET_ORDERS";
 export const GET_APARTMENTS = "GET_APARTMENTS";
 export const GET_APARTMENT_BY_ID = "GET_APARTMENT_BY_ID";
@@ -7,6 +8,8 @@ export const UPDATE_ORDER_STATUS = "UPDATE_ORDER_STATUS";
 export const CREATE_APARTMENT = "CREATE_APARTMENT";
 export const CREATE_APARTMENT_ERROR = "CREATE_APARTMENT_ERROR";
 export const GET_ALL_APARTMENT_ERROR = "GET_ALL_APARTMENT_ERROR";
+export const CHANGE_SUBWAY_NAME = "CHANGE_SUBWAY_NAME";
+export const CHANGE_SUBWAY_NAME_ERROR = "CHANGE_SUBWAY_NAME_ERROR";
 
 export const IMAGE_ADD_TO_APARTMENT_SUCESS = "IMAGE_ADD_TO_APARTMENT_SUCESS";
 export const IMAGE_ADD_TO_APARTMENT_FAIL = "IMAGE_ADD_TO_APARTMENT_FAIL";
@@ -112,6 +115,26 @@ export const addServiceAction = (serviceName) => async (dispatch, getState) => {
         });
     }
 }
+
+export const renameSubWayAction = (subWayId, name) => async (dispatch, getState) => {
+    let { data } = await getState().serviceUtilContainer.renameSubWayById(subWayId, name);
+    console.log(data);
+    if (data.status == 'ok') {
+        dispatch({
+            type: CHANGE_SUBWAY_NAME,
+            payload: {
+                name: name
+            },
+        })
+    } else {
+        dispatch({
+            type: CHANGE_SUBWAY_NAME_ERROR,
+            payload: {
+                name: name
+            },
+        })
+    }
+}
 export const handleDeleteSubWayAction = (subwayId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.deleteSubWayById(subwayId);
     if (data.status == 'ok') {
@@ -145,6 +168,13 @@ export const updateServiceNameAction = (serviceId, newServiceName) => async (dis
 
         })
     }
+}
+export const adressFilterChangeAction = (adressValue) => (dispatch) => {
+    dispatch({
+        type: CHANGE_APARTMENT_ADRESS_FILTER, payload: {
+            adressField: adressValue
+        }
+    });
 }
 
 export const addServiceToApartmentAction = (apartmentId, selectedServiceId) => async (dispatch, getState) => {
@@ -234,6 +264,8 @@ export const addSubWayAction = ({ name, geo }) => async (dispatch, getState) => 
         dispatch({
             type: ADD_SUBWAY_SUCCESS,
             payload: {
+
+                //TODO: msg из data
                 msg: 'Вы успешно добавили новое метро'
             }
         })
@@ -241,7 +273,7 @@ export const addSubWayAction = ({ name, geo }) => async (dispatch, getState) => 
         dispatch({
             type: ADD_SUBWAY_ERROR,
             payload: {
-                msg: 'Произошла какая-то ошибка при добавлении метро'
+                msg: data.msg || 'произошла серверная ошибка при добавлении метро'
             }
         });
     }

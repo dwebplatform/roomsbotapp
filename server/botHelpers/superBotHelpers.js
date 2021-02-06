@@ -39,6 +39,7 @@ function createSubwayButtons(allSubways) {
             }
         });
         if (subArray.length) {
+            console.log({ subArray });
             initialArray.push(subArray);
         }
         return initialArray;
@@ -68,7 +69,6 @@ async function showAllSubwayBotButtons(ctx) {
     let subways = [];
     try {
         let result = await axios.get(API_DOMAIN + '/api/apartments-subway/allsubway');
-
         console.log(result.data.status);
         subways = result.data.subways || [];
         let inlineKeyBoard = createSubwayButtons(subways);

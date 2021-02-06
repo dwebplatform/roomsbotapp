@@ -3,12 +3,51 @@ const { Subway } = require('../models');
 const paginate = require('express-paginate');
 const { Op } = require('sequelize');
 
+exports.updateSubWay = async (req, res) => {
+    const { subWayId, name } = req.body;
+    if (!subWayId || typeof name == 'undefined') {
+        return res.json({
+            status: 'error',
+            msg: 'не был передан id'
+        });
+    }
+    try {
+        let curSubWay = await Subway.findOne({ where: { id: subWayId } });
+        curSubWay.name = name;
+        await curSubWay.save();
+        return res.json({
+            status: 'ok',
+            msg: 'updated'
+        });
+    } catch (e) {
+
+    }
+    return res.json({
+        status: 'ok',
+        msg: 'updated'
+    });
+}
+
 exports.addSubWay = async (req, res) => {
+
     let { name, geo } = req.body;
+
     if (typeof name == 'undefined') {
         return res.json({
             status: 'error',
             msg: 'не правильно было передано поле name'
+        });
+    }
+    // check if there is already subway with same name
+    let findedSubwayWithSameName = await Subway.findOne({
+        where: {
+            name: name
+        }
+    });
+    if (findedSubwayWithSameName) {
+        return res.json({
+            status: 'error',
+            msg: 'Такое метро уже есть'
         });
     }
     try {
@@ -80,25 +119,25 @@ exports.subWayById = async (req, res) => {
     }
 }
 
-exports.deleteSubWay =async(req,res)=>{
-    let {subwayId} = req.params;
-    try{
+exports.deleteSubWay = async (req, res) => {
+    let { subwayId } = req.params;
+    try {
         let findedSubway = await Subway.destroy({
-            where:{
-                id:subwayId
+            where: {
+                id: subwayId
             }
         });
         let allSubWay = await Subway.findAll();
         return res.json({
-            status:'ok',
-            subways:allSubWay,
-            msg:'метро успешно удалено'
-         });
-    } catch(e){
+            status: 'ok',
+            subways: allSubWay,
+            msg: 'метро успешно удалено'
+        });
+    } catch (e) {
         return res.json({
-            status:'error',
-            msg:'не удалось удалить'
+            status: 'error',
+            msg: 'не удалось удалить'
         });
     }
-     
+
 }

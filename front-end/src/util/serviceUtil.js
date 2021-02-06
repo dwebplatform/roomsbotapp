@@ -9,6 +9,11 @@ export class ServiceUtilContainer {
         }
         return config;
     }
+
+    async renameSubWayById(subWayId, name) {
+        let response = await axios.post('/api/subway/update', { subWayId, name }, this.config());
+        return response;
+    }
     async getToken(email, pass) {
         let response = await axios.post('/api/login', {
             email,

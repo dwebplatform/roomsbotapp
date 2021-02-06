@@ -56,6 +56,8 @@ exports.getAllOrders = async (req, res) => {
             }
         }
     };
+    filterObject.order = [['createdAt', 'DESC']];
+
     try {
         let ordersWithCount = await Order.findAndCountAll(filterObject);
         const itemCount = ordersWithCount.count;
@@ -68,18 +70,6 @@ exports.getAllOrders = async (req, res) => {
             itemCount,
             pages: paginate.getArrayPages(req)(3, pageCount, req.query.page)
         });
-        // let orders = await Order.findAll();
-        // if (!orders) {
-        //     return res.json({
-        //         status: 'error',
-        //         msg: 'не удалось найти ни одного заказа'
-        //     });
-        // }
-
-        // return res.json({
-        //     status: 'ok',
-        //     orders: orders
-        // })
     } catch (e) {
 
         return res.json({

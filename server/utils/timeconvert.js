@@ -20,6 +20,7 @@ let dataContainer = {
  * @returns Object{ day, month, year}
  */
 function convertData(dataStr) {
+    dataStr = dataStr.trim();
     let [day, month, year] = dataStr.split(' ');
 
     day = transformDayToFormat(day);

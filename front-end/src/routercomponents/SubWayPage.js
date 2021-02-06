@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {handleDeleteSubWayAction, addSubWayAction,getAllSubWaysAction } from '../reducers/actions'
+import { renameSubWayAction, handleDeleteSubWayAction, addSubWayAction, getAllSubWaysAction } from '../reducers/actions'
 import './subway.css';
 
 
@@ -35,25 +35,45 @@ export const SubWayPage = () => {
     const handleAddSubWay = () => {
         dispatch(addSubWayAction(subWayFields));
     }
-    const {data: subways, error:subwayError, loading} = useSelector((state)=>state.subwaysNotIncludedInApartment);
-    const handleDeleteSubWay=(subwayId)=>{
+    const { data: subways, error: subwayError, loading } = useSelector((state) => state.subwaysNotIncludedInApartment);
+    const handleDeleteSubWay = (subwayId) => {
         dispatch(handleDeleteSubWayAction(subwayId));
     }
-    useEffect(()=>{
+    useEffect(() => {
         dispatch(getAllSubWaysAction())
-    },[]);
+    }, []);
+
+    const handleSubWayNameChange = (subwayId, name) => {
+        dispatch(renameSubWayAction(subwayId, name));
+    };
+    const [curSubWayChangeId, setCurSubChangeId] = useState(null);
     return (<div className="subway-container d-flex">
         <aside className="all-subways">
             <ul className="list-group apartment-list-container__item-list">
                 <li className="list-group-item active" >Список метро</li>
-                {(subways && subways.length) ?subways.map((item)=>{
+                {(subways && subways.length) ? subways.map((item) => {
                     return (
-                    <li className="list-group-item d-flex justify-content-between" 
-                        key={item.id}><span>{item.name}</span><button className="btn btn-danger"
-                        onClick={()=>handleDeleteSubWay(item.id)}>x</button>
+                        <li className={`list-group-item d-flex justify-content-between ${(item.id === curSubWayChangeId) ? 'active' : ''}`}
+                            key={item.id} onClick={() => {
+                                setCurSubChangeId(item.id);
+                            }}>
+                            {item.id === curSubWayChangeId ? <input type="text"
+                                onBlur={() => {
+                                    setCurSubChangeId(null);
+                                    dispatch(getAllSubWaysAction())
+                                }}
+                                className="form-control mr-3"
+                                onChange={(e) => {
+                                    handleSubWayNameChange(item.id, e.target.value);
+                                }}
+                            /> : <span >{item.name}</span>
+                            }
+
+                            <button className="btn btn-danger"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteSubWay(item.id) }}>x</button>
                         </li>)
 
-                }):null}            
+                }) : null}
             </ul>
         </aside>
         <section className="subway-create-metro" >

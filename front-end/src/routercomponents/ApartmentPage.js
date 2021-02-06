@@ -8,7 +8,7 @@ import './apartmentpage.css';
 import { objectHasProps } from '../util/helpers';
 
 
-import { addServiceToApartmentAction, clearOrderEventAction, getAllServiceAction, createApartmentAction, deleteServiceFromApartmentAction, getServicesForApartmentAction, removeSubWayFromApartmentAction, deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
+import { adressFilterChangeAction, addServiceToApartmentAction, clearOrderEventAction, getAllServiceAction, createApartmentAction, deleteServiceFromApartmentAction, getServicesForApartmentAction, removeSubWayFromApartmentAction, deleteApartmentByIdAction, addSubwayForApartmentAction, deleteApartmentImageByIndexAction, getAllSubWaysAction, getAllApartmentsAction, getApartmentByIdAction, updateBasicApartmentFieldsAction, addNewImageToApartmentAction } from '../reducers/actions';
 import { BrowserRouter, Redirect, Link, Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 
 
@@ -427,16 +427,39 @@ export const ApartmentPage = () => {
     useEffect(() => {
         dispatch(getAllApartmentsAction());
     }, []);
+    const [isApartmentFilterShown, setShowApartmentFilter] = useState(false);
+    const { adressField } = useSelector((state) => state.apartmentFilter);
+    const handleApartmentAdressChange = (e) => {
+        let value = e.target.value;
+        dispatch(adressFilterChangeAction(value));
+    }
+    function ApartmentList() {
+        return (apartments && apartments.length) ? apartments.filter((el) => el.address.includes(adressField)).map((apartment) => {
+            return (<li className="list-group-item" key={apartment.id}>
+                <Link to={`${url}/${apartment.id}`}>{apartment.address}</Link></li>)
+        }) : null;
+    }
     return (
-        <div className="apartment-container">
+        <div className="apartment-container"  >
             <aside className="apartment-list-container">
                 <div className="apartment-list-container__item">
-                    <ul className="list-group apartment-list-container__item-list">
-                        <li className="list-group-item active">Все квартиры</li>
-                        {(apartments && apartments.length) ? apartments.map((apartment) => {
+                    <ul className="list-group apartment-list-container__item-list" >
+                        <li className="list-group-item active"
+                            onClick={() => setShowApartmentFilter(true)}>
+                            {!isApartmentFilterShown && `Все квартиры`}
+                            {isApartmentFilterShown && <input type="text"
+                                onBlur={() => setShowApartmentFilter(false)}
+                                className="form-control"
+                                value={adressField}
+                                onChange={handleApartmentAdressChange}
+                            />}
+                        </li>
+                        <ApartmentList />
+                        {/* {(apartments && apartments.length) ? apartments.filter((el) => el.address.includes(adressField)).map((apartment) => {
                             return (<li className="list-group-item" key={apartment.id}>
                                 <Link to={`${url}/${apartment.id}`}>{apartment.address}</Link></li>)
-                        }) : null}
+                        }) : null} */}
+
                         <li className="list-group-item"><Link to='/apartments'>Создать квартиру</Link></li>
                     </ul>
                 </div>
@@ -449,9 +472,7 @@ export const ApartmentPage = () => {
                         <AddApartment handleAddApartmentListener={handleAddApartment} />
                     </Route>
                     <Route path={`${path}/:apartmentId`}>
-
                         <EditApartment />
-
                     </Route>
                 </Switch>
             </section>

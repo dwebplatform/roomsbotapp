@@ -20,6 +20,9 @@ const WizardScene = Scenes.WizardScene;
 const createOrderWizzardScene = new WizardScene(
     "create_order", // Имя сцены
     (ctx) => {
+        if (!ctx.session.orderInfo.apartments) {
+            ctx.session.orderInfo.apartments = {};
+        }
         // ctx.message.text  - введенный текст
         ctx.session.orderInfo.client.name = ctx.message.text;
         ctx.reply('Введите ваш возраст Например: 23');

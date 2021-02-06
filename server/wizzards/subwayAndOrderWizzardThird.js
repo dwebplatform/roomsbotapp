@@ -1,12 +1,9 @@
 
 require('dotenv').config();
 const { Scenes, Markup } = require('telegraf');
-const { default: axios } = require('axios');
 let DOMAIN_ROOT = process.env.DOMAIN_ROOT;
 const fs = require('fs');
-const { ApartmentApi } = require('../apiinterfaces/ApartmentApi');
 const superBotHelper = require('../botHelpers/superBotHelpers');
-const apartmentApiInstance = new ApartmentApi();
 
 function convertApartmentIdsForPriceButton(ctx, apartmentIds) {
     // интервал цен
@@ -54,10 +51,6 @@ function convertApartmentIdsForPriceButton(ctx, apartmentIds) {
                         text: `Цена: ${key}`,
                         callback_data: JSON.stringify({ type: 'press_price', value: apartmentIds })
                     }]);
-                    // await ctx.reply('', Markup.inlineKeyboard([{
-                    //     text: `Цена: ${key}`,
-                    //     callback_data: JSON.stringify({ type: 'press_price', value: apartmentIds })
-                    // }]));
                 }
             }
             await ctx.reply('Доступные цены', Markup.inlineKeyboard(buttons));
@@ -117,9 +110,12 @@ const subwayAndOrderWizzard = new WizardScene(
             };
             chooseSubwayButtonHandler(ctx, dataStr);
             // обрабатываем данные в случае успеха переходим дальше
+        } else {
+            superBotHelper.startCommands.subwayStart(ctx);
         }
     },
-    (ctx) => {
+
+    async (ctx) => {
         if (isButtonPressed(ctx)) {// нажали на кнопку с определенным метро
             let data = JSON.parse(ctx.update.callback_query.data) || {
                 type: 'error'
@@ -127,6 +123,8 @@ const subwayAndOrderWizzard = new WizardScene(
             chooseAmountOfRoomsButton(ctx, data);
         } else {
             ctx.reply('Пожалуйста выберите сколько комнат должно быть в квартире');
+            await showRoomAmountButtons(ctx, ctx.session.roomsAmountResponseData);
+            ctx.wizard.back();
         }
     },
     (ctx) => {
@@ -137,7 +135,8 @@ const subwayAndOrderWizzard = new WizardScene(
             };
             choosePriceIntervalButton(ctx, data);
         } else {
-            ctx.reply('Пожалуйста выберите цену по которой хотели бы купить квартиру')
+            ctx.reply('Пожалуйста выберите цену по которой хотели бы купить квартиру');
+            convertApartmentIdsForPriceButton(ctx, ctx.session.apartmentIdsForPrices);
         }
     }
 );
@@ -157,13 +156,14 @@ async function choosePriceIntervalButton(ctx, data) {
     //!расскоментировать
     // let response = await apartmentApiInstance.getApartmentsByIds(apartmentIds);
     let response = await ctx.session.telBotApiService.getApartmentsByIds(apartmentIds);
-
     if (response.data && response.data.status === 'ok') {
         showApartmentsMessage(ctx, response.data);
     } else {
         ctx.reply('Произошла серверная ошибка извините');
     }
 }
+
+
 //! value это строка "roomAmount:apartmen1Id:apartmen2Id" первый аргумент это количество комнат остальные это id этих квартир 
 async function chooseAmountOfRoomsButton(ctx, data) {
     let { type, value } = data;
@@ -173,6 +173,7 @@ async function chooseAmountOfRoomsButton(ctx, data) {
     }
     let [amountOfRoom, ...apartmentIds] = value.split(':');
     // цены в интервалах 
+    ctx.session.apartmentIdsForPrices = apartmentIds;
     convertApartmentIdsForPriceButton(ctx, apartmentIds);
     ctx.reply('вы выбрали количество комнат');
     await ctx.wizard.next();
@@ -186,12 +187,15 @@ async function chooseSubwayButtonHandler(ctx, data) {
     }
     ctx.session.subwayId = value;
     // делаем запрос на получение квартир с таким метро и возвращаем кнопки
-
-    console.log(ctx.session.telBotApiService);
-    console.log('THIS IS THE BOT API')
     let { data: responseData } = await ctx.session.telBotApiService.getApartmetnsWithBySubWayId(value);
     //!расскоментировать
     // let { data: responseData } = await apartmentApiInstance.getApartmetnsWithBySubWayId(value);
+    ctx.session.roomsAmountResponseData = responseData;
+    showRoomAmountButtons(ctx, responseData);
+
+}
+
+async function showRoomAmountButtons(ctx, responseData) {
     if (responseData.status === 'ok') {
         try {
             let inlineKeyBoard = createRoomsAmountButton(responseData.roomsAmountWithApartmentsIds);
@@ -209,6 +213,7 @@ async function chooseSubwayButtonHandler(ctx, data) {
         superBotHelper.saveBotMessageIdForDeleted(ctx, info.message_id);
     }
 }
+
 
 function showApartmentsMessage(ctx, data) {
     console.log({ data: data });

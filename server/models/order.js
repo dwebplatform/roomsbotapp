@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
     status: DataTypes.INTEGER,
     fromDate: DataTypes.INTEGER,
     toDate: DataTypes.INTEGER,
+    createdAt: {
+      type: DataTypes.INTEGER,
+      defaultValue: new Date().getTime() / 1000
+    },
     fullInfo: {
       type: DataTypes.STRING,
       get: function () {
