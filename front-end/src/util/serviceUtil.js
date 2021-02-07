@@ -24,7 +24,7 @@ export class ServiceUtilContainer {
     async deleteService(serviceId) {
         let response = await axios.post('/api/services/delete', {
             serviceId
-        });
+        }, this.config());
         return response;
     }
     async addService(serviceName) {
@@ -34,7 +34,7 @@ export class ServiceUtilContainer {
         return response;
     }
     async deleteSubWayById(subwayId) {
-        let response = await axios.post(`/api/subway/delete/${subwayId}`, this.config());
+        let response = await axios.post(`/api/subway/delete/${subwayId}`, {}, this.config());
         return response;
     }
     async updateServiceName(serviceId, newServiceName) {
@@ -58,14 +58,12 @@ export class ServiceUtilContainer {
         let response = await axios.get('/api/services/all');
         return response;
     }
-
     async deleteServiceFromApartmentAction(apartmentId, serviceId) {
         let response = await axios.post('/api/services/remove-from-apartment', {
             apartmentId,
             serviceId
         }, this.config());
         return response;
-
     }
     async getServicesForApartment(apartmentId) {
         let response = await axios.get(`/api/services/all-for-apartment/${apartmentId}`, this.config());

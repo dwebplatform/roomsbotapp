@@ -75,39 +75,26 @@ app.get('/generate-dummy-data', async (req, res) => {
     // })
 })
 
-// const TelegramBot = require('node-telegram-bot-api');
 
-// replace the value below with the Telegram token you receive from @BotFather
+
 const token = process.env.ROOM_BOT_TOKEN;
-// Create a bot that uses 'polling' to fetch new updates
-
-// Matches "/echo [whatever]"
-
-
 const { Telegraf, session, Scenes, Markup } = require('telegraf');
-const { default: axios } = require('axios');
 
-const WizardScene = Scenes.WizardScene;
 const Stage = Scenes.Stage;
 
-
-
 const bot = new Telegraf(token);
-
 const stage = new Stage();
 
 // Регистрируем сцену создания матча
 
 
-// stage.register(create);
+const { askLocationWizzard } = require('./wizzards/askLocationWizzard');
 const { createOrderWizzardScene } = require('./wizzards/createOrderWizzard');
 const { subwayAndOrderWizzard } = require('./wizzards/subwayAndOrderWizzardThird');
 const { askPhoneWizzard } = require('./wizzards/askPhoneWizzard');
-stage.register(askPhoneWizzard, createOrderWizzardScene, subwayAndOrderWizzard);
+stage.register(askLocationWizzard, askPhoneWizzard, createOrderWizzardScene, subwayAndOrderWizzard);
 bot.use(session());
 bot.use(stage.middleware());
-
-
 
 function createApartmentButtons(allApartments) {
 
@@ -147,30 +134,21 @@ function createApartmentButtons(allApartments) {
 //TODO нижний комментарий это все квартиры
 const superBotHelper = require('./botHelpers/superBotHelpers');
 const { BotApi } = require('./apiinterfaces/ApartmentApi');
+
+
 bot.start((ctx) => {
-    if (!ctx.session.orderInfo) {
-        ctx.session.orderInfo = {};
-    }
-    if (!ctx.session.telBotApiService) {
-        ctx.session.telBotApiService = new BotApi('1234');
-    }
-    ctx.reply('Здравствуйте это бот помошник поиска квартир по городу, хотите оформить заявку ?', Markup.inlineKeyboard([[
-        {
-            text: 'Ок',
-            callback_data: JSON.stringify({ type: 'begin_ask_phone_info' })
-        }
-    ]]))
-    ctx.scene.enter('ask_phone_info');
-    // ctx.reply(`Добрый день это бот поиска квартир в центре, если вы ходите сделать заявку нажмите на кнопку продолжить `, Markup.inlineKeyboard([
-    //     [{
-    //         text: 'Ок',
-    //         callback_data: JSON.stringify({ type: 'begin_ask' })
-    //     }]
-    // ]));
-    // ctx.scene.enter("subway_and_order");
-})
+    // request_location:true
+
+    ctx.reply('Добрый день это бот помощник поиска квартир Хотите оставить заявку ?', Markup.inlineKeyboard([[{
+        text: 'Ok',
+        callback_data: JSON.stringify({ type: 'ask_location_info' })
+    }]]));
+    ctx.scene.enter('ask_location_info');
+
+});
 
 function getUserContacts(ctx) {
+    //update.message
     if (ctx.update && ctx.update.message && ctx.update.message.contact) {// если пользователь нажал на кнопку передать данные
         ctx.session.isBeginAskFinished = true;
         let { first_name, last_name, phone_number } = ctx.update.message.contact;
@@ -189,26 +167,12 @@ function getUserContacts(ctx) {
 
 }
 
-
 bot.command('/tel', (ctx) => {
-
     let [command, telephone] = ctx.update.message.text.split(' ');
     ctx.session.isBeginAskFinished = true;
     ctx.reply('Отлично ваши данные приняты' + telephone);
 })
 bot.on('message', (ctx) => {
-
-    // const inlineMessageRatingKeyboard = [[
-    //     { text: '👍', callback_data: 'like' },
-    //     { text: '👎', callback_data: 'dislike' }
-    // ]];
-    // ctx.reply('Тут есть кнопки', {
-    //     reply_markup: JSON.stringify({
-    //         inline_keyboard: inlineMessageRatingKeyboard
-    //     })
-    // });
-    // ctx.scene.enter("create_order");
-    // ctx.reply('send MEssage')
 });
 
 const handleTelegrafCallBackQuery = bot => {
@@ -224,7 +188,7 @@ const handleTelegrafCallBackQuery = bot => {
                     keyboard: [
                         [{
                             text: 'Отправить свои контактные данные',
-                            request_contact: true
+                            request_contact: true,
                         }]
                     ],
                     resize_keyboard: true,

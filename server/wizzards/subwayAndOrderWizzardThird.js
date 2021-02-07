@@ -4,6 +4,7 @@ const { Scenes, Markup } = require('telegraf');
 let DOMAIN_ROOT = process.env.DOMAIN_ROOT;
 const fs = require('fs');
 const superBotHelper = require('../botHelpers/superBotHelpers');
+const { BotApi } = require('../apiinterfaces/ApartmentApi');
 
 function convertApartmentIdsForPriceButton(ctx, apartmentIds) {
     // интервал цен
@@ -187,6 +188,9 @@ async function chooseSubwayButtonHandler(ctx, data) {
     }
     ctx.session.subwayId = value;
     // делаем запрос на получение квартир с таким метро и возвращаем кнопки
+    if (!ctx.session.telBotApiService) {
+        ctx.session.telBotApiService = new BotApi('1234');
+    }
     let { data: responseData } = await ctx.session.telBotApiService.getApartmetnsWithBySubWayId(value);
     //!расскоментировать
     // let { data: responseData } = await apartmentApiInstance.getApartmetnsWithBySubWayId(value);

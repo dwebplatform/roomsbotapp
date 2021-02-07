@@ -19,7 +19,7 @@ const askPhoneWizzard = new WizardScene(
                 keyboard: [
                     [{
                         text: 'Отправить свои контактные данные',
-                        request_contact: true
+                        request_contact: true,
                     }]
                 ],
                 resize_keyboard: true,
@@ -35,7 +35,6 @@ const askPhoneWizzard = new WizardScene(
             ctx.reply('спасибо можете продолжить');
             handleRequestButtonPress(ctx);
         } else {
-            console.log('ELSE')
             try {
                 let phoneStr = ctx.message.text;
                 let phoneInstance = parsePhoneNumber(phoneStr, 'RU');
@@ -50,7 +49,6 @@ const askPhoneWizzard = new WizardScene(
                     return ctx.wizard.back();
                 }
             } catch (e) {
-                console.log({ ERROR: e });
                 ctx.reply('контакты были введены не правильно повторите ввод');
                 // return ctx.wizard.back();
             }
@@ -75,11 +73,25 @@ function handlePhoneInfo(ctx) {
     ctx.reply('Отлично теперь выберите метро из предложенного списка');
 
 
+    /*ctx.reply('Разрешите получить ваше текущее местоположение ? ', {
+        reply_markup: JSON.stringify({
+            keyboard: [
+                [{
+                    text: 'Отправить свои контактные данные',
+                    request_location: true,
+                }]
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
+        })
+    }
+    ); */
     superBotHelper.startCommands.subwayStart(ctx);
     ctx.scene.enter('subway_and_order');
 
 }
 function handleRequestButtonPress(ctx) {
+    // update.message
     let { first_name, last_name, phone_number } = ctx.update.message.contact;
     if (!ctx.session.orderInfo || !ctx.session.orderInfo.client) {
         ctx.session.orderInfo = {
@@ -93,15 +105,10 @@ function handleRequestButtonPress(ctx) {
     }
     superBotHelper.startCommands.subwayStart(ctx);
     ctx.scene.enter("subway_and_order");
-
 }
 function isRequestButtonPressed(ctx) {
     return (ctx.update && ctx.update.message && ctx.update.message.contact);
 }
-function isButtonPressed(ctx) {
-    return ctx.update && ctx.update.callback_query;
-}
-
 
 
 module.exports = {

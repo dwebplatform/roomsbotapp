@@ -164,7 +164,7 @@ const EditApartment = () => {
                 {(editFields.subways && editFields.subways.length) ?
                     editFields.subways.map((subWayItem) => {
                         return <span className="badge badge-light p-3 m-2 subway-item" key={subWayItem.id}>
-                            {subWayItem.name}!!!
+                            {subWayItem.name}
                             <BsXCircle onClick={() => handleDeleteSubWayFromApartment(subWayItem.id)} className="subway-item-icon" />
                         </span>
                     }) : null

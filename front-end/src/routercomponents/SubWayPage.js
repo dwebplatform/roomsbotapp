@@ -87,7 +87,7 @@ export const SubWayPage = () => {
                 <textarea className="form-control  my-3"
                     value={subWayFields.geo}
                     onChange={changeSubWayGeo}
-                    placeholder="Введите координаты метро через запятую Например 124,243" />
+                    placeholder="Введите координаты метро через запятую Например 124,243  это будет [lat,long]" />
                 <button className="btn btn-success  my-1" onClick={handleAddSubWay}>Сохранить метро</button>
             </div>
         </section>

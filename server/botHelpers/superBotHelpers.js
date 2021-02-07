@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { Markup } = require('telegraf');
 const API_DOMAIN = 'http://localhost:8000';
-
+const { latlng2distance } = require('../utils/geodistance')
 
 // использовать каждый раз, когда нужно сохранить сообщения, для того, чтобы его удалить
 function saveBotMessageIdForDeleted(ctx, message_id) {
@@ -20,28 +20,43 @@ function deleteBotMessages(ctx) {
         ctx.session.deletedMessageIds = [];
     }
 }
-function createSubwayButtons(allSubways) {
+
+function convertArrayToBlocked(arr, size) {
+    let sub = [];
+    for (let i = 0; i < Math.ceil(arr.length / size); i++) {
+        sub[i] = arr.slice(i * size, i * size + size);
+    }
+    return sub;
+}
+
+function createSubwayButtons(allSubways, userLocation = {
+    latitude: 0,
+    longitude: 0
+}) {
     try {
-        let subArray = [];
         let initialArray = [];
         allSubways.forEach((subway) => {
-            if (subArray.length == 3) {// разбиение на колонки
-                initialArray.push(subArray);
-                subArray = [];
-            } else {
-                subArray.push({
-                    text: subway.name, callback_data: JSON.stringify({
-                        //TODO: обработать событие нажатия на метро
-                        type: 'choose_subway',
-                        value: subway.id
-                    })
-                });
-            }
+            let [subwayLat, subwayLong] = subway.geo;
+            let distanse = latlng2distance(subwayLat, subwayLong, userLocation.latitude, userLocation.longitude);
+            initialArray.push({
+                distanse: distanse,
+                text: subway.name,
+                callback_data: JSON.stringify({ type: 'choose_subway', value: subway.id })
+            });
         });
-        if (subArray.length) {
-            console.log({ subArray });
-            initialArray.push(subArray);
+        initialArray = initialArray.sort((a, b) => {
+            return a.distanse - b.distanse;
+        });
+        if (initialArray[0]) {
+            initialArray[0].text += '✔️';
         }
+        if (initialArray[1]) {
+            initialArray[1].text += '✔️';
+        }
+        if (initialArray[2]) {
+            initialArray[2].text += '✔️';
+        }
+        initialArray = initialArray.map(item => [item]);
         return initialArray;
     } catch (e) {
         return [];
@@ -71,7 +86,7 @@ async function showAllSubwayBotButtons(ctx) {
         let result = await axios.get(API_DOMAIN + '/api/apartments-subway/allsubway');
         console.log(result.data.status);
         subways = result.data.subways || [];
-        let inlineKeyBoard = createSubwayButtons(subways);
+        let inlineKeyBoard = createSubwayButtons(subways, ctx.session.userLocation);
         let info = await ctx.reply('Выберите метро рядом с которым вы бы хотели приобрести квартиру', Markup.inlineKeyboard(inlineKeyBoard));
         superBotHelper.saveBotMessageIdForDeleted(ctx, info.message_id);
     } catch (e) {

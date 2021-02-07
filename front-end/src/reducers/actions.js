@@ -137,6 +137,7 @@ export const renameSubWayAction = (subWayId, name) => async (dispatch, getState)
 }
 export const handleDeleteSubWayAction = (subwayId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.deleteSubWayById(subwayId);
+    console.log(data)
     if (data.status == 'ok') {
         dispatch({
 

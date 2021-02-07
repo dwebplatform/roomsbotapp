@@ -109,7 +109,6 @@ const reducer = (state = initialState, action) => {
                 popupInfo: {}
             }
         case DELETE_SUBWAY_BY_ID_SUCCESS:
-
             return {
                 ...state,
                 subwaysNotIncludedInApartment: {
