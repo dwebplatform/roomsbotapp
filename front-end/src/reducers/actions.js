@@ -396,9 +396,11 @@ export const deleteApartmentImageByIndexAction = (apartmentId, imageIndex) => as
 export const getApartmentByIdAction = (apartmentId) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.getApartmentById(apartmentId);
     if (data.status === 'ok') {
+        // servicesForCurrentApartment: servicesForCurrentApartmentAfterDelete,
         dispatch({
             type: GET_APARTMENT_BY_ID,
             payload: {
+
                 apartment: data.apartment,
                 loading: false,
                 error: false
@@ -424,7 +426,9 @@ export const clearOrderEventAction = () => async (dispatch, getState) => {
 }
 export const createApartmentAction = (formDataObject) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.createApartment(formDataObject);
+
     if (data.status === 'ok') {
+
         dispatch({
             type: CREATE_APARTMENT, payload: {
                 ...data,

@@ -170,7 +170,6 @@ const reducer = (state = initialState, action) => {
                 }
             };
         case ADD_SERVICE_TO_APARTMENT_SUCCESS:
-
             return {
                 ...state,
                 servicesForCurrentApartment: {
@@ -392,9 +391,12 @@ const reducer = (state = initialState, action) => {
                 }
             };
         case GET_APARTMENT_BY_ID:
-
             return {
                 ...state,
+                servicesForCurrentApartment: {
+                    ...state.servicesForCurrentApartment,
+                    data: payload.apartment.Services
+                },
                 apartment: {
                     error: false,
                     loading: false,
@@ -422,13 +424,18 @@ const reducer = (state = initialState, action) => {
                 }
             };
         case CREATE_APARTMENT:
+            let newApartment = payload.apartment;
+
             return {
                 ...state,
+                apartments: {
+                    ...state.apartments,
+                    data: [...state.apartments.data, newApartment],
+                },
                 popupInfo: {
                     createApartmentEvent: {
                         msg: 'Квартира была создана успешно'
                     },
-                    ...payload
                 }
             }
         case GET_ORDERS:

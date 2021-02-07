@@ -1,6 +1,6 @@
 
 
-const { Apartment, Subway } = require('../models');
+const { Apartment, Subway, Service } = require('../models');
 const paginate = require('express-paginate');
 const rootPath = require('app-root-path');
 const uid = require('uniqid');
@@ -201,10 +201,7 @@ exports.updateBasicFields = async (req, res) => {
             msg: 'не удалось обновить данные квартиры'
         })
     }
-    return res.json({
-        status: 'ok',
-        msg: 'basic field updated'
-    });
+
 }
 
 
@@ -271,9 +268,13 @@ exports.getApartmentById = async (req, res) => {
     let { apartmentId } = req.params;
     try {
         let curApartment = await Apartment.findOne({
-            include: {
+            include: [{
                 model: Subway
             },
+            {
+                model: Service
+            }
+            ],
             where: {
                 id: apartmentId
             },
@@ -336,6 +337,7 @@ exports.createApartment = async (req, res) => {
         }
         return res.json({
             status: 'ok',
+            apartment: newApartmentInstance,
             msg: 'успешно создана новая квартира'
         });
 
