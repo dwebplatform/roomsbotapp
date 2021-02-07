@@ -276,8 +276,10 @@ const AddApartment = ({ handleAddApartmentListener }) => {
             dispatch(clearOrderEventAction());
         }
     }, []);
+    const GeneralError = useSelector(state => state.error);
     return (<>  <div className="current-apartment-container__item">
         {createApartmentEvent && <div className="alert alert-success">{createApartmentEvent.msg}</div>}
+        {GeneralError && <div className="alert alert-danger">{GeneralError.msg}</div>}
         <div className="current-apartment-container__field">
             <label className="current-apartment-container__field-label">Адрес:</label>
             <input className="curretn-apartment-container__field-input form-control" type="text"
@@ -333,12 +335,11 @@ const EditServiceInput = ({ apartmentId }) => {
     const { data: services } = useSelector(state => state.servicesForCurrentApartment);
     const { value: selectedServiceId, bind } = useField('null');
     const dispatch = useDispatch();
-    // console.log(allServices);
     useEffect(() => {
         dispatch(getAllServiceAction());
     }, []);
     useEffect(() => {
-        dispatch(getServicesForApartmentAction(apartmentId));
+        // dispatch(getServicesForApartmentAction(apartmentId));
     }, [apartmentId]);
     const handleAddServiceToApartment = () => {
         if (!(selectedServiceId == 'null')) {

@@ -156,12 +156,13 @@ exports.createNewService = async (req, res) => {
 		});
 	}
 	try {
-		await Service.create({
+		let newService = await Service.create({
 			name: serviceName
 		});
 		return res.json({
 			status: 'ok',
-			msg: 'новая услуга была успешно создана'
+			msg: 'новая услуга была успешно создана',
+			service: newService
 		});
 	} catch (e) {
 		return res.json({

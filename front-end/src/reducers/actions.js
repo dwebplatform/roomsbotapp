@@ -91,7 +91,10 @@ export const deleteServiceAction = (serviceId) => async (dispatch, getState) => 
     let { data } = await getState().serviceUtilContainer.deleteService(serviceId);
     if (data.status == 'ok') {
         dispatch({
-            type: DELETE_SERVICE_SUCCESS
+            type: DELETE_SERVICE_SUCCESS,
+            payload: {
+                serviceId
+            }
         })
     } else {
         dispatch({
@@ -102,10 +105,12 @@ export const deleteServiceAction = (serviceId) => async (dispatch, getState) => 
 };
 export const addServiceAction = (serviceName) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.addService(serviceName);
+
     if (data.status == "ok") {
         dispatch({
             type: ADD_NEW_SERVICE_SUCCESS,
             payload: {
+                service: data.service
             }
         });
     } else {
@@ -156,13 +161,14 @@ export const handleDeleteSubWayAction = (subwayId) => async (dispatch, getState)
 }
 export const updateServiceNameAction = (serviceId, newServiceName) => async (dispatch, getState) => {
     let { data } = await getState().serviceUtilContainer.updateServiceName(serviceId, newServiceName);
+
     if (data.status === 'ok') {
         dispatch({
             payload: {
                 services: data.services,
             },
             type: UPDATE_SERVICE_NAME_SUCCESS
-        })
+        });
     } else {
         dispatch({
             type: UPDATE_SERVICE_NAME_ERROR
@@ -375,7 +381,10 @@ export const deleteApartmentImageByIndexAction = (apartmentId, imageIndex) => as
     console.log(data);
     if (data.status == 'ok') {
         dispatch({
-            type: DELETE_APARTMENT_IMAGE_SUCCESS
+            type: DELETE_APARTMENT_IMAGE_SUCCESS,
+            payload: {
+                imageIndex
+            }
         });
     } else {
         dispatch({
@@ -422,7 +431,13 @@ export const createApartmentAction = (formDataObject) => async (dispatch, getSta
             }
         });
     } else {
-        dispatch({ type: CREATE_APARTMENT_ERROR })
+        dispatch({
+            type: CREATE_APARTMENT_ERROR, payload: {
+                error: {
+                    msg: data.msg || 'произошла ошибка при попытке создать новый адрес'
+                }
+            }
+        })
     }
 
 }

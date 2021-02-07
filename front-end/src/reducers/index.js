@@ -1,5 +1,5 @@
 import { DummyContainer, ServiceUtilContainer } from "../util/serviceUtil";
-import { GET_TOKEN_SUCCESS, GET_TOKEN_ERROR, DELETE_SUBWAY_BY_ID_SUCCESS, DELETE_SUBWAY_BY_ID_ERROR, IMAGE_ADD_TO_APARTMENT_FAIL, REMOVE_SUBWAY_FROM_APARTMENT_ERROR, ADD_SUBWAY_TO_APARTMENT_ERROR, ADD_SERVICE_TO_APARTMENT_ERROR, UPDATE_SERVICE_NAME_ERROR, UPDATE_SERVICE_NAME_SUCCESS, ADD_SERVICE_TO_APARTMENT_SUCCESS, GET_ALL_SERVICES_SUCCESS, GET_ALL_SERVICES_ERROR, REMOVE_SERVICE_FROM_APARTMENT_SUCCESS, REMOVE_SERVICE_FROM_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_SUCCESS, DELETE_APARTMENT_BY_ID_SUCCESS, REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS, GET_ORDERS, CREATE_APARTMENT, ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS, IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS, ADD_SUBWAY_ERROR, ADD_SUBWAY_SUCCESS, UPDATE_BASIC_FIELDS_SUCCESS, DELETE_APARTMENT_BY_ID_ERROR, CLEAR_ORDER_EVENT, ADD_NEW_SERVICE_ERROR, ADD_NEW_SERVICE_SUCCESS, LOG_OUT, CHANGE_APARTMENT_ADRESS_FILTER } from "./actions";
+import { GET_TOKEN_SUCCESS, GET_TOKEN_ERROR, DELETE_SUBWAY_BY_ID_SUCCESS, DELETE_SUBWAY_BY_ID_ERROR, IMAGE_ADD_TO_APARTMENT_FAIL, REMOVE_SUBWAY_FROM_APARTMENT_ERROR, ADD_SUBWAY_TO_APARTMENT_ERROR, ADD_SERVICE_TO_APARTMENT_ERROR, UPDATE_SERVICE_NAME_ERROR, UPDATE_SERVICE_NAME_SUCCESS, ADD_SERVICE_TO_APARTMENT_SUCCESS, GET_ALL_SERVICES_SUCCESS, GET_ALL_SERVICES_ERROR, REMOVE_SERVICE_FROM_APARTMENT_SUCCESS, REMOVE_SERVICE_FROM_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_ERROR, GET_SERVICE_TO_APARTMENT_SUCCESS, DELETE_APARTMENT_BY_ID_SUCCESS, REMOVE_SUBWAY_FROM_APARTMENT_SUCCESS, GET_ORDERS, CREATE_APARTMENT, ADD_SUBWAY_TO_APARTMENT_SUCCESS, CREATE_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_ERROR, GET_SUBWAY_FOR_CURRENT_APARTMENT_SUCCESS, GET_APARTMENTS, IMAGE_ADD_TO_APARTMENT_SUCESS, GET_APARTMENT_BY_ID, DELETE_APARTMENT_IMAGE_SUCCESS, ADD_SUBWAY_ERROR, ADD_SUBWAY_SUCCESS, UPDATE_BASIC_FIELDS_SUCCESS, DELETE_APARTMENT_BY_ID_ERROR, CLEAR_ORDER_EVENT, ADD_NEW_SERVICE_ERROR, ADD_NEW_SERVICE_SUCCESS, LOG_OUT, CHANGE_APARTMENT_ADRESS_FILTER, DELETE_SERVICE_SUCCESS } from "./actions";
 import { immitateDeletionServiceFromApartment, immitateAddServiceToApartment } from "./redux-helpers";
 
 
@@ -84,10 +84,13 @@ const reducer = (state = initialState, action) => {
                 }
             }
         case ADD_NEW_SERVICE_SUCCESS:
-
+            let addedService = payload.service;
             return {
                 ...state,
-
+                services: {
+                    ...state.services,
+                    data: [...state.services.data, addedService]
+                },
                 popupInfo: {
                     addNewServiceSuccess: {
                         msg: 'успешно создана новая услуга'
@@ -151,19 +154,22 @@ const reducer = (state = initialState, action) => {
                     }
                 }
             }
+        case DELETE_SERVICE_SUCCESS:
+            let deletedServiceId = payload.serviceId;
+            let prevServices = [...state.services.data];
+            try {
+                prevServices = prevServices.filter((item) => item.id != deletedServiceId);
+            } catch (e) {
+                prevServices = [];
+            }
+            return {
+                ...state,
+                services: {
+                    ...state.services,
+                    data: prevServices
+                }
+            };
         case ADD_SERVICE_TO_APARTMENT_SUCCESS:
-            // добавляем к услугам для ТЕКУЩЕГО
-            // квартиры
-            // let copy = state.servicesForCurrentApartment.data;
-            // let isServiceAlreadyThere = false;
-            // copy.forEach((item)=>{
-            //     if(item.id ==payload.service.id){
-            //             isServiceAlreadyThere = true;
-            //     }
-            // })
-            // if(!isServiceAlreadyThere){
-            //     copy = [...copy, payload.service];
-            // }
 
             return {
                 ...state,
@@ -363,8 +369,24 @@ const reducer = (state = initialState, action) => {
                 }
             };
         case DELETE_APARTMENT_IMAGE_SUCCESS:
+            let imagesInApartment = [];
+            try {
+
+                imagesInApartment = [...state.apartment.data.images];
+                let imageIndex = payload.imageIndex;
+                imagesInApartment.splice(imageIndex, 1);
+            } catch (e) {
+                imagesInApartment = [];
+            };
             return {
                 ...state,
+                apartment: {
+                    ...state.apartment,
+                    data: {
+                        ...state.apartment.data,
+                        images: imagesInApartment
+                    }
+                },
                 popupInfo: {
                     apartmentImageDeleted: true
                 }
@@ -392,6 +414,9 @@ const reducer = (state = initialState, action) => {
         case CREATE_APARTMENT_ERROR:
             return {
                 ...state,
+                error: {
+                    msg: payload.error.msg
+                },
                 popupInfo: {
                     msg: 'произошла ошибка при попытке создать квартиру'
                 }

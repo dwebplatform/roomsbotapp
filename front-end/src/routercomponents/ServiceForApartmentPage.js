@@ -22,7 +22,7 @@ export const ServiceForApartmentPage = () => {
 
     useEffect(() => {
         dispatch(getAllServiceAction());
-    }, [handleAddService]);
+    }, []);
 
     const handleCurentServiceChoose = (id, name) => {
         setCurServiceId(id);
