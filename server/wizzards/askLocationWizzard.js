@@ -57,7 +57,19 @@ const askLocationWizzard = new WizardScene(
         if (location) {
             // записываем ее в 
             ctx.session.userLocation = location;
+            ctx.reply('Спасибо за ваши контакты Продолжить ?', Markup.inlineKeyboard([[{
+                text: 'ok',
+                callback_data: JSON.stringify({ type: 'ask_phone_info_line' })
+            }]]));
+
+        } else {
+            ctx.reply('Подбор вариантов квартир будет без учета вашего текущего местоположения', Markup.inlineKeyboard([[{
+                text: 'ok',
+                callback_data: JSON.stringify({ type: 'ask_phone_info_line' })
+            }]]));
+
         }
+
         // start phone dialog
         ctx.scene.enter('ask_phone_info');
     }

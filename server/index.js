@@ -201,30 +201,6 @@ const handleTelegrafCallBackQuery = bot => {
             superBotHelper.startCommands.subwayStart(ctx)
             ctx.scene.enter("subway_and_order");
         }
-        if (type === 'create_order') {
-            // создаем Order
-            console.log({ orderInfo: ctx.session.orderInfo });
-            ctx.session.selectedApartmentId = value;
-            if (!ctx.session.orderInfo['apartments']) {
-                ctx.session.orderInfo = {
-                    ...ctx.session.orderInfo,
-                    // "client": {
-                    //     "name": "Павел",
-                    //     "phone": 88001234516,
-                    //     "secondName": "-",
-                    //     "email": "anonim@mail.ru"
-                    // },
-                    // заполняем apartments[id]
-                    "apartments": {
-                        [ctx.session.selectedApartmentId]: {},
-                    }
-                };
-            } else {
-
-            }
-            ctx.reply("Отлично: введите ваше имя");
-            ctx.scene.enter("create_order");
-        }
     };
 }
 

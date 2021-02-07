@@ -20,9 +20,23 @@ const WizardScene = Scenes.WizardScene;
 const createOrderWizzardScene = new WizardScene(
     "create_order", // Имя сцены
     (ctx) => {
-        if (!ctx.session.orderInfo.apartments) {
-            ctx.session.orderInfo.apartments = {};
+        if (isButtonPressed(ctx)) {
+            let { type, value: apartmentId } = JSON.parse(ctx.update.callback_query.data);
+            ctx.session.selectedApartmentId = apartmentId;
+            ctx.session.orderInfo = {
+                ...ctx.session.orderInfo,
+                "apartments": {
+                    [apartmentId]: {}
+                }
+            }
+            ctx.reply('Введите ваше имя:');
+            ctx.wizard.next();
+        } else {
+            //TODO repeat show apartments
         }
+    },
+    (ctx) => {
+
         // ctx.message.text  - введенный текст
         ctx.session.orderInfo.client.name = ctx.message.text;
         ctx.reply('Введите ваш возраст Например: 23');

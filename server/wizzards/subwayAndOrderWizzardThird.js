@@ -23,7 +23,6 @@ function convertApartmentIdsForPriceButton(ctx, apartmentIds) {
         // let { data } = await apartmentApiInstance.getApartmentsByIds([apartmentId]);
         if (data && data.apartments) {
             let curApartment = data.apartments[0] || {};
-            console.log(curApartment.price);
             for (let priceKey in priceContainer) {
                 if (priceKey == '5000') {
                     if (parseInt(curApartment.price) > 5000) {
@@ -59,15 +58,6 @@ function convertApartmentIdsForPriceButton(ctx, apartmentIds) {
     });
 }
 
-function showApartmentsWithPhoto(ctx, inlineKeyBoard) {
-    inlineKeyBoard.map(async (btn, i) => {
-        await ctx.replyWithPhoto({
-            url: DOMAIN_ROOT + '/img/__APARTMENT_UID__r0kxy2f8gkknwuxbe.jpeg'
-        });
-        await ctx.reply('->', Markup.inlineKeyboard([btn]));
-    });
-
-}
 /** 
  * ! вот такой интерфейс должен иметь пришедший объект
  * !interface IroomsAmountAndIds {
@@ -138,6 +128,7 @@ const subwayAndOrderWizzard = new WizardScene(
         } else {
             ctx.reply('Пожалуйста выберите цену по которой хотели бы купить квартиру');
             convertApartmentIdsForPriceButton(ctx, ctx.session.apartmentIdsForPrices);
+
         }
     }
 );
@@ -237,7 +228,7 @@ function showApartmentsMessage(ctx, data) {
             url: DOMAIN_ROOT + imageInfo
         }, Markup.inlineKeyboard([btn]));
     });
-    ctx.scene.leave();
+    ctx.scene.enter('create_order');
     // раскоментировать!!!
     // ctx.reply('Вы выбрали квартиры с определенным кол-вом комнат', Markup.inlineKeyboard(inlineKeyBoard));
 }
