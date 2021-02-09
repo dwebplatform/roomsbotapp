@@ -16,6 +16,7 @@ class BotApi {
         return response;
     }
     async apartmentsWithGreaterPersonMaxCount(maxPerson) {
+
         let response = await axios.get(`${DOMAIN_ROOT}/api/telegram/apartments-with-greater-person-amount/?telbot_key=${this.key}&maxPerson=${maxPerson}`);
         return response;
     }

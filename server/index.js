@@ -138,6 +138,12 @@ const { BotApi } = require('./apiinterfaces/ApartmentApi');
 
 bot.start((ctx) => {
     // request_location:true
+
+    //chat info
+    //telegram.sendMediaGroup
+    ctx.session.curBot = bot;
+    ctx.session.fromChatId = ctx.from.id;
+
     ctx.reply('Добрый день это бот помощник поиска квартир Хотите оставить заявку ?', Markup.inlineKeyboard([[{
         text: 'Ok',
         callback_data: JSON.stringify({ type: 'ask_location_info' })

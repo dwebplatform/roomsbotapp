@@ -202,21 +202,22 @@ async function showRoomAmountButtons(ctx, responseData) {
     }
 }
 
-
 function showApartmentsMessage(ctx, data) {
-    console.log({ data: data });
     let { apartments } = data;
     const imageContainer = {};
     for (let ap of apartments) {
         if (ap.images && ap.images.length) {
-            imageContainer[ap.id] = ap.images[0];
+            imageContainer[ap.id] = ap.images;
         }
     }
     let inlineKeyBoard = createApartmentButtonWithCertainAmountOfRooms(apartments);
     inlineKeyBoard.map(async (btn, i) => {
         let btnInfo = btn[0];
         let curApartmentId = JSON.parse(btnInfo.callback_data).value;
-        let imageInfo = (curApartmentId in imageContainer) ? imageContainer[curApartmentId] : '/default/missy_kitty.jpg';
+        console.log({ allImages: imageContainer[curApartmentId] });
+        let imageInfo = (curApartmentId in imageContainer) ? imageContainer[curApartmentId][0] : '/default/missy_kitty.jpg';
+        // ctx.session.fromChatId
+
         await ctx.replyWithPhoto({
             url: DOMAIN_ROOT + imageInfo
         }, Markup.inlineKeyboard([btn]));

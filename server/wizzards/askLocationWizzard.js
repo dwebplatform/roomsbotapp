@@ -1,12 +1,11 @@
 
 require('dotenv').config();
 const { Telegraf, session, Scenes, Markup } = require('telegraf');
-const { default: axios } = require('axios');
 const { convertData } = require('../utils/timeconvert');
 const superBotHelper = require('../botHelpers/superBotHelpers');
 const { parsePhoneNumber } = require('libphonenumber-js');
 let DOMAIN_ROOT = process.env.DOMAIN_ROOT;
-
+const { BotApi } = require('../apiinterfaces/ApartmentApi');
 
 const WizardScene = Scenes.WizardScene;
 const askLocationWizzard = new WizardScene(
@@ -20,34 +19,34 @@ const askLocationWizzard = new WizardScene(
 
         ctx.reply('Отлично, ' + ctx.session.clientName + ', какое количество гостей планирует заселиться ?');
         ctx.wizard.next();
-
     },
-    (ctx) => {
+    async (ctx) => {
         ctx.session.personsAmount = ctx.message.text;
         try {
             if (!ctx.session.telBotApiService) {
                 ctx.session.telBotApiService = new BotApi(process.env.TEL_BOT_API_KEY);
-
+            }
+            let { data: responseDate } = await ctx.session.telBotApiService.apartmentsWithGreaterPersonMaxCount(parseInt(ctx.session.personsAmount));
+            if (responseDate.status == 'ok') {
+                ctx.reply('Разрешите узнать ваше местоположение ?', {
+                    "parse_mode": "Markdown",
+                    "reply_markup": {
+                        "one_time_keyboard": true,
+                        "keyboard": [[{
+                            text: "Разрешить",
+                            request_location: true
+                        }], ["Нет"]]
+                    }
+                });
+                ctx.wizard.next();
+            } else {
+                ctx.reply('К сожалению нет подходящей квартиры в которой могло бы поселиться столько гостей, свяжитесь с менеджером по телефону: +74957825240, он  проконсультирует вас по размещению вашего количетсва гостей в ближайшие свободные апартаменты');
+                ctx.scene.leave();
             }
         } catch (e) {
-
+            ctx.reply('К сожалению нет подходящей квартиры в которой могло бы поселиться столько гостей, свяжитесь с менеджером по телефону: +74957825240, он  проконсультирует вас по размещению вашего количетсва гостей в ближайшие свободные апартаменты');
+            ctx.scene.leave();
         }
-        // > max 
-        // свяжитесь с нашим менеджером он 
-        //вас проконсультирует по размещению вашего количетсва гостей в ближайшие свободные апартаменты
-        // ctx.message.text  - введенный текст
-        // ctx.reply('Разрешите узнать ваше местоположение ?',);
-        ctx.reply('Разрешите узнать ваше местоположение ?', {
-            "parse_mode": "Markdown",
-            "reply_markup": {
-                "one_time_keyboard": true,
-                "keyboard": [[{
-                    text: "Разрешить",
-                    request_location: true
-                }], ["Нет"]]
-            }
-        });
-        ctx.wizard.next();
     },
     (ctx) => {
         let location = handleRequestLocationButtonPress(ctx);
