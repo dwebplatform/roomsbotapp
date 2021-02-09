@@ -87,12 +87,12 @@ const stage = new Stage();
 
 // Регистрируем сцену создания матча
 
-
+const { askDateFromCalendarWizzard } = require('./wizzards/askDateFromCalendarWizzard');
 const { askLocationWizzard } = require('./wizzards/askLocationWizzard');
 const { createOrderWizzardScene } = require('./wizzards/createOrderWizzard');
 const { subwayAndOrderWizzard } = require('./wizzards/subwayAndOrderWizzardThird');
 const { askPhoneWizzard } = require('./wizzards/askPhoneWizzard');
-stage.register(askLocationWizzard, askPhoneWizzard, createOrderWizzardScene, subwayAndOrderWizzard);
+stage.register(askDateFromCalendarWizzard, askLocationWizzard, askPhoneWizzard, createOrderWizzardScene, subwayAndOrderWizzard);
 bot.use(session());
 bot.use(stage.middleware());
 
@@ -138,13 +138,11 @@ const { BotApi } = require('./apiinterfaces/ApartmentApi');
 
 bot.start((ctx) => {
     // request_location:true
-
     ctx.reply('Добрый день это бот помощник поиска квартир Хотите оставить заявку ?', Markup.inlineKeyboard([[{
         text: 'Ok',
         callback_data: JSON.stringify({ type: 'ask_location_info' })
     }]]));
     ctx.scene.enter('ask_location_info');
-
 });
 
 function getUserContacts(ctx) {
@@ -167,13 +165,6 @@ function getUserContacts(ctx) {
 
 }
 
-bot.command('/tel', (ctx) => {
-    let [command, telephone] = ctx.update.message.text.split(' ');
-    ctx.session.isBeginAskFinished = true;
-    ctx.reply('Отлично ваши данные приняты' + telephone);
-})
-bot.on('message', (ctx) => {
-});
 
 const handleTelegrafCallBackQuery = bot => {
     return ctx => {
@@ -212,26 +203,7 @@ bot.on('callback_query', handleTelegrafCallBackQuery(bot));
 
 bot.launch();
 
-// function tokenHandler(req,res,next){
-//    const authHeader = req.headers['authorization']
-//   const token = authHeader && authHeader.split(' ')[1]
-//   if (token == null) return res.json({
-//     status:'error',
-//     msg:'not authorized'
-//   }); // if there isn't any token
 
-//   jwt.verify(token, process.env.TOKEN_PRIVATE_KEY, (err, user) => {
-//     if (err) return res.json({status:'error',msg:'not authorized'});
-//     req.user = user;
-//     next(); // pass the execution off to whatever request the client intended
-//   });
-// }
-// app.get('/api/protected',tokenHandler,(req,res)=>{
-//     return res.json({
-//         status:'ok',
-//         msg:'protected route'
-//     })
-// });
 app.post('/api/login', async (req, res) => {
     let { pass, email } = req.body;
     if (!pass || !email) {
@@ -267,15 +239,6 @@ app.post('/api/login', async (req, res) => {
         })
     }
 });
-// app.use((req,res,next)=>{
-//     if(req.query.api_key!=='1234'){
-//     return res.json({
-//         status:'error'
-//     });
-//     }
-//     next();
-// });
-
 
 require('./routes/services.routes')(app);
 require('./routes/main.routes')(app);

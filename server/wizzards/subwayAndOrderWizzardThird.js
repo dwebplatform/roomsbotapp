@@ -128,7 +128,6 @@ const subwayAndOrderWizzard = new WizardScene(
         } else {
             ctx.reply('Пожалуйста выберите цену по которой хотели бы купить квартиру');
             convertApartmentIdsForPriceButton(ctx, ctx.session.apartmentIdsForPrices);
-
         }
     }
 );
@@ -144,9 +143,6 @@ async function choosePriceIntervalButton(ctx, data) {
         return;
     }
     let apartmentIds = value.split(':');
-    console.log({ apartmentIds });
-    //!расскоментировать
-    // let response = await apartmentApiInstance.getApartmentsByIds(apartmentIds);
     let response = await ctx.session.telBotApiService.getApartmentsByIds(apartmentIds);
     if (response.data && response.data.status === 'ok') {
         showApartmentsMessage(ctx, response.data);
@@ -154,7 +150,6 @@ async function choosePriceIntervalButton(ctx, data) {
         ctx.reply('Произошла серверная ошибка извините');
     }
 }
-
 
 //! value это строка "roomAmount:apartmen1Id:apartmen2Id" первый аргумент это количество комнат остальные это id этих квартир 
 async function chooseAmountOfRoomsButton(ctx, data) {
@@ -180,14 +175,12 @@ async function chooseSubwayButtonHandler(ctx, data) {
     ctx.session.subwayId = value;
     // делаем запрос на получение квартир с таким метро и возвращаем кнопки
     if (!ctx.session.telBotApiService) {
-        ctx.session.telBotApiService = new BotApi('1234');
+        ctx.session.telBotApiService = new BotApi(process.env.TEL_BOT_API_KEY);
     }
-    let { data: responseData } = await ctx.session.telBotApiService.getApartmetnsWithBySubWayId(value);
-    //!расскоментировать
-    // let { data: responseData } = await apartmentApiInstance.getApartmetnsWithBySubWayId(value);
+    let maxPerson = ctx.session.personsAmount;
+    let { data: responseData } = await ctx.session.telBotApiService.getApartmetnsWithBySubWayId(value, maxPerson);
     ctx.session.roomsAmountResponseData = responseData;
     showRoomAmountButtons(ctx, responseData);
-
 }
 
 async function showRoomAmountButtons(ctx, responseData) {

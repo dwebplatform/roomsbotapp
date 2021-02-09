@@ -18,18 +18,19 @@ export function useApartmentUpdate(apartmentId, apartment) {
         price: 2500,
         roomAmount: 1,
         isVip: "0",
+        maxperson: 6,
         subways: [],
     });
     useEffect(() => {
-
         // console.log(objectHasProps(apartment,['address','price','roomAmount','isVip','Subways']));
-        if (objectHasProps(apartment, ['address', 'price', 'roomAmount', 'isVip', 'Subways'])) {
+        if (objectHasProps(apartment, ['address', 'price', 'roomAmount', 'isVip', 'maxperson', 'Subways'])) {
             setEditFields({
                 address: apartment.address,
                 price: apartment.price,
                 roomAmount: apartment.roomAmount,
                 isVip: apartment.isVip ? "1" : "0",
                 subways: apartment.Subways,
+                maxperson: apartment.maxperson
             });
         }
     }, [apartment, apartmentId]);
@@ -46,7 +47,6 @@ const EditApartment = () => {
     const { data: apartment, error, loading } = useSelector((state) => state.apartment);
     const { apartmentImageDeleted, removeSubWayFromApartmentSuccess, successfullyAdded, deletedApartmentSuccess } = useSelector((state) => state.popupInfo);
     const [editFields, setEditFields] = useApartmentUpdate(apartmentId, apartment);
-
     const handleBasicFieldsChange = (e) => {
         setEditFields((prevState) => {
             return {
@@ -119,6 +119,14 @@ const EditApartment = () => {
                 <input id={"apartment-amount-" + apartmentId} type="text" className="form-control"
                     value={editFields.roomAmount}
                     name="roomAmount"
+                    onChange={handleBasicFieldsChange}
+                />
+            </div>
+            <div className="edit-apartmentcontainer__item form-group">
+                <label htmlFor={"apartment-max-person-" + apartmentId}>Максимальное кол-во гостей:</label>
+                <input id={"apartment-max-person-" + apartmentId} type="text" className="form-control"
+                    value={editFields.maxperson}
+                    name="maxperson"
                     onChange={handleBasicFieldsChange}
                 />
             </div>
@@ -207,8 +215,17 @@ const AddApartment = ({ handleAddApartmentListener }) => {
         isVip: 0,
         roomAmount: 1,
         images: [],
-        price: 2500
+        price: 2500,
+        maxperson: 6,
     });
+    const handleMaxPersonChange = (e) => {
+        setApartmentFields((prevState) => {
+            return {
+                ...prevState,
+                maxperson: e.target.value
+            }
+        });
+    }
     const handleAddressChange = (e) => {
         setApartmentFields((prevState) => {
             return {
@@ -288,6 +305,13 @@ const AddApartment = ({ handleAddApartmentListener }) => {
             />
         </div>
     </div>
+        <div className="current-apartment-container__field">
+            <label className="current-apartment-container__field-label">Максимальное кол-во гостей</label>
+            <input type="number" className="form-control"
+                value={apartmentFields.maxperson}
+                onChange={handleMaxPersonChange}
+            />
+        </div>
         <div className="current-apartment-container__item">
             <div className="current-apartment-container__field">
                 <label className="current-apartment-container__field-label">Статус:</label>
@@ -303,7 +327,7 @@ const AddApartment = ({ handleAddApartmentListener }) => {
                 <input className="curretn-apartment-container__field-input form-control"
                     onChange={handleRoomAmountChange}
                     value={apartmentFields.roomAmount}
-                    type="text" />
+                    type="number" />
             </div>
         </div>
         <div className="current-apartment-container__item">

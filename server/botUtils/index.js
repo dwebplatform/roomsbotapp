@@ -1,5 +1,4 @@
 
-// const { orderSteps, orderTotalStep } = require('./orderSteps');
 // const initialState = {
 //     count: 0,
 //     orderProcedureStep: null,

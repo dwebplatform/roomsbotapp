@@ -72,7 +72,6 @@ function handlePhoneInfo(ctx) {
     }
     ctx.reply('Отлично теперь выберите метро из предложенного списка');
 
-
     /*ctx.reply('Разрешите получить ваше текущее местоположение ? ', {
         reply_markup: JSON.stringify({
             keyboard: [

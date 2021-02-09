@@ -12,6 +12,29 @@ const WizardScene = Scenes.WizardScene;
 const askLocationWizzard = new WizardScene(
     "ask_location_info", // Имя сцены
     (ctx) => {
+        ctx.reply('Добрый день как к вам можно обратиться ?');
+        ctx.wizard.next();
+    },
+    (ctx) => {
+        ctx.session.clientName = ctx.message.text;
+
+        ctx.reply('Отлично, ' + ctx.session.clientName + ', какое количество гостей планирует заселиться ?');
+        ctx.wizard.next();
+
+    },
+    (ctx) => {
+        ctx.session.personsAmount = ctx.message.text;
+        try {
+            if (!ctx.session.telBotApiService) {
+                ctx.session.telBotApiService = new BotApi(process.env.TEL_BOT_API_KEY);
+
+            }
+        } catch (e) {
+
+        }
+        // > max 
+        // свяжитесь с нашим менеджером он 
+        //вас проконсультирует по размещению вашего количетсва гостей в ближайшие свободные апартаменты
         // ctx.message.text  - введенный текст
         // ctx.reply('Разрешите узнать ваше местоположение ?',);
         ctx.reply('Разрешите узнать ваше местоположение ?', {
@@ -49,7 +72,8 @@ const askLocationWizzard = new WizardScene(
                     callback_data: JSON.stringify({ type: 'begin_ask_phone_info' })
                 }
             ]]));
-            ctx.scene.enter('ask_phone_info');
+            superBotHelper.startCommands.subwayStart(ctx);
+            ctx.scene.enter('subway_and_order');
         }
     },
     (ctx) => {
@@ -69,9 +93,8 @@ const askLocationWizzard = new WizardScene(
             }]]));
 
         }
-
-        // start phone dialog
-        ctx.scene.enter('ask_phone_info');
+        superBotHelper.startCommands.subwayStart(ctx);
+        ctx.scene.enter('subway_and_order');
     }
 );
 function handleRequestLocationButtonPress(ctx) {
@@ -80,12 +103,6 @@ function handleRequestLocationButtonPress(ctx) {
     } else {
         return false;
     }
-}
-function handleRequestButtonPress(ctx) {
-    // update.message
-}
-function isRequestButtonPressed(ctx) {
-    return (ctx.update && ctx.update.message && ctx.update.message.contact);
 }
 
 

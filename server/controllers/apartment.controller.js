@@ -167,8 +167,8 @@ exports.updateBasicFields = async (req, res) => {
             msg: 'не был передан id квартиры'
         });
     }
-    let { address, roomAmount, price, isVip } = req.body;
-    if (!address || !roomAmount || !price) {
+    let { address, roomAmount, price, isVip, maxperson } = req.body;
+    if (!address || !roomAmount || !price || !maxperson) {
         return res.json({
             status: 'error',
             msg: 'не все поля были переданы'
@@ -189,6 +189,7 @@ exports.updateBasicFields = async (req, res) => {
         curApartment.address = address;
         curApartment.roomAmount = roomAmount;
         curApartment.price = price;
+        curApartment.maxperson = maxperson;
         curApartment.isVip = (isVip == "1") ? true : false;
         await curApartment.save();
         return res.json({
@@ -302,10 +303,10 @@ exports.getApartmentById = async (req, res) => {
 
 exports.createApartment = async (req, res) => {
 
-    let { address, isVip, roomAmount, price } = req.body;
+    let { address, isVip, roomAmount, price, maxperson } = req.body;
     isVip = parseInt(isVip);
 
-    if (!address || !roomAmount || !price) {
+    if (!address || !roomAmount || !price || !maxperson) {
         return res.json({
             status: 'error',
             msg: 'Не все поля заполнены'
@@ -327,6 +328,7 @@ exports.createApartment = async (req, res) => {
             isVip: !!isVip,
             roomAmount: roomAmount || 1,
             price: price,
+            maxperson: maxperson,
             images: allPaths
         });
         if (!newApartmentInstance) {

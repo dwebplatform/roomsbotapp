@@ -1,7 +1,7 @@
 
 
 const { Apartment, Subway, Order } = require('../models');
-
+const { Op } = require('sequelize');
 async function getOrderObject({ client, apartments }) {
     let orderObject = {
         client: {
@@ -102,12 +102,20 @@ exports.createOrder = async (req, res) => {
 }
 exports.AmountOfRoomsWithApartmentIdsBySubwayId = async (req, res) => {
     let { subwayId } = req.params;
+    let { maxPerson } = req.query;
+
+
     try {
         let allApartments = await Apartment.findAll({
+            where: {
+                maxperson: {
+                    [Op.gte]: maxPerson
+                }
+            },
             include: {
                 model: Subway,
                 where: {
-                    id: subwayId
+                    id: subwayId,
                 }
             }
         });
@@ -172,4 +180,38 @@ exports.getApartmentsByIds = async (req, res) => {
         });
     }
 
+}
+
+exports.apartmentsWithGreaterPersonAmount = async (req, res) => {
+    let { maxPerson } = req.query;
+
+    try {
+        let apartments = await Apartment.findAll({
+            where: {
+                maxperson: {
+                    [Op.gte]: maxPerson
+                }
+            }
+        });
+        if (apartments && apartments.length) {
+            return res.json({
+                status: 'ok',
+                msg: 'есть апартаменты с таким кол-вом гостей'
+            });
+        } else {
+            return res.json({
+                status: 'error',
+                msg: 'нет квартир с таким количеством гостей'
+            });
+        }
+    } catch (e) {
+        return res.json({
+            status: 'error',
+            msg: 'не удалось получить ни одной квартиры'
+        });
+    }
+    return res.json({
+        status: 'ok',
+        msg: 'получили квартиры с таким количеством'
+    });
 }

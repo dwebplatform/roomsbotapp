@@ -21,17 +21,14 @@ let dataContainer = {
  */
 function convertData(dataStr) {
     dataStr = dataStr.trim();
-    let [day, month, year] = dataStr.split(' ');
-
+    let [day, month] = dataStr.split(' ');
     day = transformDayToFormat(day);
-    // ((day / 10) % 10).toString().replace(".", "")
-    //
     let result = {
         day: day,
         month: null,
-        year: year
+        year: new Date().getFullYear()
     };
-    if (isNaN(parseInt(day)) || !month || isNaN(parseInt(year))) {
+    if (isNaN(parseInt(day)) || !month) {
         return false;
     }
     let isMonthExist = false;
@@ -41,20 +38,18 @@ function convertData(dataStr) {
             result.month = transformDayToFormat(monthIndex);
             // get unix date
             // new Date(year, month, date)
-            unixTime = new Date(year, +monthIndex - 1, +day).getTime() / 1000;
+            unixTime = new Date(new Date().getFullYear(), +monthIndex - 1, +day).getTime() / 1000;
             isMonthExist = true;
         }
     }
     if (!isMonthExist) {
         return false;
     }
-
     return { ...result, unixTime };
 }
 module.exports = {
     convertData
 };
-
 function transformDayToFormat(day) {
     let transformedDay = day.replace(/[^0-9.]/g, "");
     transformedDay = ((+transformedDay / 10) % 10).toString().replace(".", "");

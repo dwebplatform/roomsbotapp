@@ -29,73 +29,80 @@ const createOrderWizzardScene = new WizardScene(
                     [apartmentId]: {}
                 }
             }
-            ctx.reply('Введите ваше имя:');
+            ctx.reply('Введите ваш телефон:');
             ctx.wizard.next();
         } else {
             //TODO repeat show apartments
         }
     },
     (ctx) => {
-
-        // ctx.message.text  - введенный текст
-        ctx.session.orderInfo.client.name = ctx.message.text;
-        ctx.reply('Введите ваш возраст Например: 23');
-        return ctx.wizard.next(); // Переходим к следующему обработчику.
+        try {
+            if (!ctx.session.orderInfo.client) {
+                ctx.session.orderInfo.client = {
+                    "name": ctx.session.clientName || 'Аноним',
+                    "phone": "",
+                    "secondName": "-",
+                    "email": "anonim@mail.ru"
+                }
+            }
+            // ctx.session.orderInfo.client.name = ctx.message.text;
+            ctx.session.orderInfo.client.phone = ctx.message.text;
+            ctx.reply('Введите возраст');
+            return ctx.wizard.next(); // Переходим к следующему обработчику.
+        } catch (e) {
+            ctx.reply('произошла ошибка при вводе имени');
+        }
     },
     (ctx) => {
         ctx.session.orderInfo.client.age = ctx.message.text;
-        ctx.reply('Введите дату заезда: Пример 2ое сентября 2021');
+        ctx.reply('Введите дату заезда: Пример 2ое сентября ');
         return ctx.wizard.next(); // Переходим к следующему обработчику.
     },
     (ctx) => {
         let apartmentId = ctx.session.selectedApartmentId;
         let fromDateObj = convertData(ctx.message.text.trim());
         if (!fromDateObj) {
-            ctx.reply('Вы ввели неправильную дату');
-            return ctx.wizard.back();
+            ctx.reply('Вы ввели неправильную дату повторите ввод даты заезда:');
+        } else {
+            ctx.session.orderInfo.fromDate = fromDateObj.unixTime;
+            ctx.session.orderInfo.apartments[apartmentId].fromDate = `${fromDateObj.day}.${fromDateObj.month}.${fromDateObj.year}`;
+            // "services":"['Игровая машинка','Мебель','Платок']",
+            //TODO: доделать services
+            ctx.session.orderInfo.apartments[apartmentId].services = ['это тест из телеграма', 'платок из телеграма', 'Сообщение из телеграмма'];
+            ctx.reply('Введите дату выезда: Пример 2ое сентября ');
+            // ctx.reply('Этап 2: выбор времени проведения матча.');
+            return ctx.wizard.next(); // Переходим к следующему обработчику.
         }
-        ctx.session.orderInfo.fromDate = fromDateObj.unixTime;
-        ctx.session.orderInfo.apartments[apartmentId].fromDate = `${fromDateObj.day}.${fromDateObj.month}.${fromDateObj.year}`;
-        // "services":"['Игровая машинка','Мебель','Платок']",
-        //TODO: доделать services
-        ctx.session.orderInfo.apartments[apartmentId].services = ['это тест из телеграма', 'платок из телеграма', 'Сообщение из телеграмма'];
-        ctx.reply('Введите дату выезда: Пример 2ое сентября 2020');
-        // ctx.reply('Этап 2: выбор времени проведения матча.');
-        return ctx.wizard.next(); // Переходим к следующему обработчику.
     },
     (ctx) => {
         let apartmentId = ctx.session.selectedApartmentId;
         let toDateObject = convertData(ctx.message.text);
         if (!toDateObject) {
-            ctx.reply('Вы ввели неправильную дату');
-            return ctx.wizard.back();
+            ctx.reply('Вы ввели неправильную дату повторите дату выезда:');
+        } else {
+            ctx.session.orderInfo.toDate = toDateObject.unixTime;
+            ctx.session.orderInfo.apartments[apartmentId].toDate = `${toDateObject.day}.${toDateObject.month}.${toDateObject.year}`;
+            if (!ctx.session.orderInfo.apartments[apartmentId].personsAmount) {// добавляем кол-во гостей в заказ
+                ctx.session.orderInfo.apartments[apartmentId].personsAmount = ctx.session.personsAmount;
+            }
+            const inlineYesNoKeyboard = [[{
+                text: 'Да',
+                callback_data: JSON.stringify({
+                    type: 'has_childs',
+                    value: true
+                })
+            }, {
+                text: 'Нет',
+                callback_data: JSON.stringify({
+                    type: 'has_childs',
+                    value: false
+                })
+            }]];
+            ctx.reply('Заезд с детьми ?', Markup.inlineKeyboard(inlineYesNoKeyboard));
+            return ctx.wizard.next();
         }
-        ctx.session.orderInfo.toDate = toDateObject.unixTime;
-        ctx.session.orderInfo.apartments[apartmentId].toDate = `${toDateObject.day}.${toDateObject.month}.${toDateObject.year}`;
-        ctx.reply('Сколько человек планируется заселиться Цифра Например:7.');
-        return ctx.wizard.next(); // Переходим к следующему обработчику.
-    },
-    (ctx) => {
-        let apartmentId = ctx.session.selectedApartmentId;
-        if (!ctx.session.orderInfo.apartments[apartmentId].personsAmount) {
-            ctx.session.orderInfo.apartments[apartmentId].personsAmount = ctx.message.text;
-        }
-        //TODO: добавить эмоджи
-        const inlineYesNoKeyboard = [[{
-            text: 'Да',
-            callback_data: JSON.stringify({
-                type: 'has_childs',
-                value: true
-            })
-        }, {
-            text: 'Нет',
-            callback_data: JSON.stringify({
-                type: 'has_childs',
-                value: false
-            })
-        }]];
-        ctx.reply('Заезд с детьми ?', Markup.inlineKeyboard(inlineYesNoKeyboard));
-        return ctx.wizard.next(); // Переходим к следующему обработчику.
+
+        // Переходим к следующему обработчику.
     },
     (ctx) => {
         if (isButtonPressed(ctx)) { // если нажал на кнопку то, это тот самый случай
@@ -125,6 +132,7 @@ const createOrderWizzardScene = new WizardScene(
             buttonEventHandler(ctx);
         }
         const orderData = { orderInfo: ctx.session.orderInfo };
+        console.log(JSON.stringify(orderData));
         try {
             //! расскоментировать
             // let { data } = await axios.post(DOMAIN_ROOT + '/api/order/create', orderData);
