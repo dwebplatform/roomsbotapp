@@ -120,7 +120,7 @@ const subwayAndOrderWizzard = new WizardScene(
     },
     (ctx) => {
         if (isButtonPressed(ctx)) {
-            ctx.reply('Вы нажали на кнопку с определенным интервалом цен');
+            ctx.reply('Выберите квартиру из списка ниже');
             let data = JSON.parse(ctx.update.callback_query.data) || {
                 type: 'error'
             };
@@ -214,14 +214,36 @@ function showApartmentsMessage(ctx, data) {
     inlineKeyBoard.map(async (btn, i) => {
         let btnInfo = btn[0];
         let curApartmentId = JSON.parse(btnInfo.callback_data).value;
-        console.log({ allImages: imageContainer[curApartmentId] });
+        // console.log({ allImages: imageContainer[curApartmentId] });
         let imageInfo = (curApartmentId in imageContainer) ? imageContainer[curApartmentId][0] : '/default/missy_kitty.jpg';
         // ctx.session.fromChatId
+        try {
+            let allImagesSend = imageContainer[curApartmentId].map((img) => {
+                return {
+                    type: 'photo',
+                    media: DOMAIN_ROOT + img
+                }
+            });
+            await ctx.session.curBot.telegram.sendMediaGroup(ctx.from.id, allImagesSend);
+        } catch (e) {
 
+        }
+
+
+        let { data: curApartmentData } = await ctx.session.telBotApiService.getApartmentsByIds([curApartmentId]);
+        let finalText = '';
+        if (curApartmentData.status == 'ok') {
+            let aparmtmentInstance = curApartmentData.apartments[0] || {};
+            console.log({ aparmtmentInstance });
+            finalText += '*адрес*:' + aparmtmentInstance.address + '\n';
+            finalText += '*кол-во комнат*:' + aparmtmentInstance.roomAmount + '\n';
+            finalText += '*цена*:' + aparmtmentInstance.price + '\n';
+        }
         await ctx.replyWithPhoto({
             url: DOMAIN_ROOT + imageInfo
-        }, Markup.inlineKeyboard([btn]));
+        }, { caption: finalText, parse_mode: 'markdown', ...Markup.inlineKeyboard([btn]) });
     });
+
     ctx.scene.enter('create_order');
     // раскоментировать!!!
     // ctx.reply('Вы выбрали квартиры с определенным кол-вом комнат', Markup.inlineKeyboard(inlineKeyBoard));

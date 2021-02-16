@@ -19,18 +19,20 @@ export function useApartmentUpdate(apartmentId, apartment) {
         roomAmount: 1,
         isVip: "0",
         maxperson: 6,
+        yandexPhotos:[],
         subways: [],
     });
     useEffect(() => {
         // console.log(objectHasProps(apartment,['address','price','roomAmount','isVip','Subways']));
-        if (objectHasProps(apartment, ['address', 'price', 'roomAmount', 'isVip', 'maxperson', 'Subways'])) {
+        if (objectHasProps(apartment, ['address', 'price', 'roomAmount', 'isVip', 'maxperson', 'Subways','yandexPhotos'  ])) {
             setEditFields({
                 address: apartment.address,
                 price: apartment.price,
                 roomAmount: apartment.roomAmount,
                 isVip: apartment.isVip ? "1" : "0",
                 subways: apartment.Subways,
-                maxperson: apartment.maxperson
+                maxperson: apartment.maxperson,
+                yandexPhotos:apartment.yandexPhotos
             });
         }
     }, [apartment, apartmentId]);
@@ -47,6 +49,7 @@ const EditApartment = () => {
     const { data: apartment, error, loading } = useSelector((state) => state.apartment);
     const { apartmentImageDeleted, removeSubWayFromApartmentSuccess, successfullyAdded, deletedApartmentSuccess } = useSelector((state) => state.popupInfo);
     const [editFields, setEditFields] = useApartmentUpdate(apartmentId, apartment);
+    const [newYandexPhoto, setNewYandexPhoto] = useState('');
     const handleBasicFieldsChange = (e) => {
         setEditFields((prevState) => {
             return {
@@ -103,7 +106,15 @@ const EditApartment = () => {
     const handleDeleteSubWayFromApartment = (subwayId) => {
         dispatch(removeSubWayFromApartmentAction(apartmentId, subwayId));
     }
-
+    const handleAddYandexPhoto = (e)=>{
+            setEditFields((prevState)=>{
+                return {
+                    ...prevState,
+                    yandexPhotos:prevState.yandexPhotos.concat(newYandexPhoto)
+                }
+            });
+            setNewYandexPhoto('');
+    }
     return (
         <div className="edit-apartment-container">
             <div className="edit-apartmentcontainer__item form-group">
@@ -114,6 +125,7 @@ const EditApartment = () => {
                     onChange={handleBasicFieldsChange}
                 />
             </div>
+            
             <div className="edit-apartmentcontainer__item form-group">
                 <label htmlFor={"apartment-amount-" + apartmentId}>Количество комнат:</label>
                 <input id={"apartment-amount-" + apartmentId} type="text" className="form-control"
@@ -138,7 +150,22 @@ const EditApartment = () => {
                     onChange={handleBasicFieldsChange}
                 />
             </div>
-
+            <div className="edit-apartmentcontainer__item form-group">
+                    {JSON.stringify(editFields.yandexPhotos)}
+                    <label htmlFor={"apartment-yandexphoto-" + apartmentId}>Добавить фотографию Yandex  :</label>
+                    <div className="d-flex">
+                         <input id={"apartment-yandexphoto-" + apartmentId} type="text" className="form-control mr-3"
+                            name="yandex-photo"
+                            value={newYandexPhoto}
+                            onChange={(e)=>{
+                                setNewYandexPhoto(e.target.value)
+                            }}
+                        />
+                        <button  
+                        onClick={handleAddYandexPhoto}
+                        style={{ fontWeight: 'bold', fontSize: '16px' }} className="btn btn-success">+</button>
+                    </div>
+                </div>
             <div className="edit-apartmentcontainer__item form-group edit-apartmentcontainer__item--added-image">
                 <div className="custom-file">
                     <input type="file" className="custom-file-input"
@@ -287,6 +314,9 @@ const AddApartment = ({ handleAddApartmentListener }) => {
         let copyApatrmentsFields = { ...apartmentFields };
         handleAddApartmentListener(copyApatrmentsFields);
     }
+    const handleYandexUrlLoad =(e)=>{
+        
+    }
     const { createApartmentEvent } = useSelector((state) => state.popupInfo);
     useEffect(() => {
         if (createApartmentEvent) {
@@ -330,17 +360,18 @@ const AddApartment = ({ handleAddApartmentListener }) => {
                     type="number" />
             </div>
         </div>
+         
         <div className="current-apartment-container__item">
             <div className="current-apartment-container__field">
                 <div className="custom-file  pointer" >
                     <input type="file" className="custom-file-input" id="loadapartment-images " onChange={handleImageLoad} />
-                    <label className="custom-file-label" htmlFor="loadapartment-images">Выберите файл для загрузки фотографии квартиры</label>
+                    <label className="custom-file-label" htmlFor="loadapartment-images"> Выберите файл для загрузки фотографии квартиры</label>
                 </div>
             </div>
         </div>
         <div className="current-apartment-container__item">
             <div className="current-apartment-container__field">
-                <label className="current-apartment-container__field-label">Цена:</label>
+                <label className="current-apartment-container__field-label">Ценssа:</label>
                 <input className="curretn-apartment-container__field-input form-control" onChange={handlePriceChange} value={apartmentFields.price} type="text" />
             </div>
         </div>
@@ -480,10 +511,6 @@ export const ApartmentPage = () => {
                             />}
                         </li>
                         <ApartmentList />
-                        {/* {(apartments && apartments.length) ? apartments.filter((el) => el.address.includes(adressField)).map((apartment) => {
-                            return (<li className="list-group-item" key={apartment.id}>
-                                <Link to={`${url}/${apartment.id}`}>{apartment.address}</Link></li>)
-                        }) : null} */}
 
                         <li className="list-group-item"><Link to='/apartments'>Создать квартиру</Link></li>
                     </ul>

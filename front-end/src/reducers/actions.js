@@ -400,7 +400,6 @@ export const getApartmentByIdAction = (apartmentId) => async (dispatch, getState
         dispatch({
             type: GET_APARTMENT_BY_ID,
             payload: {
-
                 apartment: data.apartment,
                 loading: false,
                 error: false

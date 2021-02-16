@@ -41,15 +41,15 @@ function App() {
         <PrivateRoute exact path='/orders'>
           <OrderPage />
         </PrivateRoute>
-        <Route path='/apartments'>
+        <PrivateRoute path='/apartments'>
           <ApartmentPage />
-        </Route>
-        <Route path='/subways'>
+        </PrivateRoute>
+        <PrivateRoute path='/subways'>
           <SubWayPage />
-        </Route>
-        <Route path='/services'>
+        </PrivateRoute>
+        <PrivateRoute path='/services'>
           <ServiceForApartmentPage />
-        </Route>
+        </PrivateRoute>
       </Switch>
     </>
   );

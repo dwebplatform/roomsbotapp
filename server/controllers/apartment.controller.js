@@ -167,13 +167,15 @@ exports.updateBasicFields = async (req, res) => {
             msg: 'не был передан id квартиры'
         });
     }
-    let { address, roomAmount, price, isVip, maxperson } = req.body;
-    if (!address || !roomAmount || !price || !maxperson) {
+    let { address, roomAmount, price, isVip, maxperson, yandexPhotos } = req.body;
+ 
+    if (!address || !roomAmount || !price || !maxperson || !yandexPhotos) {
         return res.json({
             status: 'error',
             msg: 'не все поля были переданы'
         });
     }
+    yandexPhotos = yandexPhotos.filter((item)=>item!='' && item!==null);
     try {
         let curApartment = await Apartment.findOne({
             where: {
@@ -190,6 +192,7 @@ exports.updateBasicFields = async (req, res) => {
         curApartment.roomAmount = roomAmount;
         curApartment.price = price;
         curApartment.maxperson = maxperson;
+        curApartment.yandexPhotos = yandexPhotos;
         curApartment.isVip = (isVip == "1") ? true : false;
         await curApartment.save();
         return res.json({

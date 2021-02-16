@@ -19,6 +19,15 @@ module.exports = (sequelize, DataTypes) => {
     isVip: DataTypes.BOOLEAN,
     roomAmount: DataTypes.INTEGER,
     maxperson: DataTypes.INTEGER,
+    yandexPhotos: {
+      type: DataTypes.STRING,
+      get: function () {
+        return JSON.parse(this.getDataValue('yandexPhotos'));
+      },
+      set: function (value) {
+        this.setDataValue('yandexPhotos', JSON.stringify(value));
+      },
+    },
     images: {
       type: DataTypes.STRING,
       get: function () {

@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return queryInterface.addColumn('apartments', 'isVip', Sequelize.BOOLEAN, {
+    return queryInterface.addColumn('Apartments', 'isVip', Sequelize.BOOLEAN, {
       after: 'address'
     });
     /**

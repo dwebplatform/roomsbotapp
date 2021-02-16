@@ -138,7 +138,7 @@ const createOrderWizzardScene = new WizardScene(
             // let { data } = await axios.post(DOMAIN_ROOT + '/api/order/create', orderData);
             let { data } = await ctx.session.telBotApiService.createOrder(orderData);
             if (data && data.status == 'ok') {
-                console.log(data)
+                console.log(data);
                 await ctx.reply('Наш менеджер скоро с вами свяжется');
             } else {
                 await ctx.reply('Произошла ошибка на сервере');

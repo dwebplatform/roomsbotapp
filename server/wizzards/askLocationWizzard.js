@@ -26,7 +26,9 @@ const askLocationWizzard = new WizardScene(
             if (!ctx.session.telBotApiService) {
                 ctx.session.telBotApiService = new BotApi(process.env.TEL_BOT_API_KEY);
             }
+
             let { data: responseDate } = await ctx.session.telBotApiService.apartmentsWithGreaterPersonMaxCount(parseInt(ctx.session.personsAmount));
+            console.log({ responseDate })
             if (responseDate.status == 'ok') {
                 ctx.reply('Разрешите узнать ваше местоположение ?', {
                     "parse_mode": "Markdown",
@@ -44,6 +46,7 @@ const askLocationWizzard = new WizardScene(
                 ctx.scene.leave();
             }
         } catch (e) {
+            console.log({ ERROR: e })
             ctx.reply('К сожалению нет подходящей квартиры в которой могло бы поселиться столько гостей, свяжитесь с менеджером по телефону: +74957825240, он  проконсультирует вас по размещению вашего количетсва гостей в ближайшие свободные апартаменты');
             ctx.scene.leave();
         }
@@ -65,12 +68,7 @@ const askLocationWizzard = new WizardScene(
         } else {
             // enter ask Phone info
             ctx.session.userLocation = location;
-            ctx.reply('Спасибо ваши данные получены Продолжить', Markup.inlineKeyboard([[
-                {
-                    text: 'OK',
-                    callback_data: JSON.stringify({ type: 'begin_ask_phone_info' })
-                }
-            ]]));
+
             superBotHelper.startCommands.subwayStart(ctx);
             ctx.scene.enter('subway_and_order');
         }
@@ -84,16 +82,22 @@ const askLocationWizzard = new WizardScene(
                 text: 'ok',
                 callback_data: JSON.stringify({ type: 'ask_phone_info_line' })
             }]]));
+            superBotHelper.startCommands.subwayStart(ctx);
+            ctx.scene.enter('subway_and_order');
 
         } else {
             ctx.reply('Подбор вариантов квартир будет без учета вашего текущего местоположения', Markup.inlineKeyboard([[{
                 text: 'ok',
                 callback_data: JSON.stringify({ type: 'ask_phone_info_line' })
             }]]));
-
+            ctx.wizard.next();
         }
+    },
+    (ctx) => {
+
         superBotHelper.startCommands.subwayStart(ctx);
         ctx.scene.enter('subway_and_order');
+
     }
 );
 function handleRequestLocationButtonPress(ctx) {
